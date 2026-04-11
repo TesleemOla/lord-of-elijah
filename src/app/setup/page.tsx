@@ -7,6 +7,8 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { PasswordInput } from '../../components/ui/PasswordInput';
 import { toast } from 'sonner';
+import { LoadingScreen } from '@/components/ui/LoadingScreen';
+import { Rocket, ShieldCheck, Activity } from 'lucide-react';
 
 export default function SetupPage() {
   const router = useRouter();
@@ -48,7 +50,7 @@ export default function SetupPage() {
     }
 
     setLoading(true);
-    
+
     try {
       await authService.setupInauguralUser({ email, password });
       toast.success('Administrator account created successfully! Redirecting...');
@@ -79,39 +81,39 @@ export default function SetupPage() {
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-white mb-3">System Initialization</h1>
           <p className="text-gray-400 max-w-md">
-            Welcome to <span className="text-primary font-semibold">Lord of Elijah</span> Transaction Management. 
+            Welcome to <span className="text-primary font-semibold">Lord of Elijah</span> Transaction Management.
             Create the inaugural Super Administrator account to begin.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex flex-col items-center text-center">
-                <ShieldCheck className="h-6 w-6 text-green-400 mb-2" />
-                <span className="text-xs font-semibold text-gray-300 uppercase tracking-wider">Super Admin</span>
-            </div>
-            <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex flex-col items-center text-center">
-                <Activity className="h-6 w-6 text-blue-400 mb-2" />
-                <span className="text-xs font-semibold text-gray-300 uppercase tracking-wider">Full Access</span>
-            </div>
-            <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex flex-col items-center text-center">
-                <ShieldCheck className="h-6 w-6 text-purple-400 mb-2" />
-                <span className="text-xs font-semibold text-gray-300 uppercase tracking-wider">Multi-Tenant</span>
-            </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex flex-col items-center text-center">
+            <ShieldCheck className="h-6 w-6 text-green-400 mb-2" />
+            <span className="text-xs font-semibold text-gray-300 uppercase tracking-wider">Super Admin</span>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex flex-col items-center text-center">
+            <Activity className="h-6 w-6 text-blue-400 mb-2" />
+            <span className="text-xs font-semibold text-gray-300 uppercase tracking-wider">Full Access</span>
+          </div>
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex flex-col items-center text-center">
+            <ShieldCheck className="h-6 w-6 text-purple-400 mb-2" />
+            <span className="text-xs font-semibold text-gray-300 uppercase tracking-wider">Multi-Tenant</span>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-             <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-center gap-3">
-               <div className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
-               {error}
-             </div>
+            <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-center gap-3">
+              <div className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
+              {error}
+            </div>
           )}
-          
+
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-300 ml-1">Master Email Address</label>
-            <Input 
-              type="email" 
-              placeholder="admin@lordofelijah.com" 
+            <Input
+              type="email"
+              placeholder="admin@lordofelijah.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="h-12"
@@ -121,30 +123,30 @@ export default function SetupPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-300 ml-1">Secure Password</label>
-                <PasswordInput 
-                placeholder="••••••••" 
+              <label className="text-sm font-medium text-gray-300 ml-1">Secure Password</label>
+              <PasswordInput
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="h-12"
                 required
-                />
+              />
             </div>
             <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-300 ml-1">Confirm Password</label>
-                <PasswordInput 
-                placeholder="••••••••" 
+              <label className="text-sm font-medium text-gray-300 ml-1">Confirm Password</label>
+              <PasswordInput
+                placeholder="••••••••"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="h-12"
                 required
-                />
+              />
             </div>
           </div>
 
-          <Button 
-            className="w-full h-14 text-lg font-bold shadow-[0_0_30px_rgba(59,130,246,0.3)] hover:shadow-[0_0_50px_rgba(59,130,246,0.5)] transition-all duration-500" 
-            type="submit" 
+          <Button
+            className="w-full h-14 text-lg font-bold shadow-[0_0_30px_rgba(59,130,246,0.3)] hover:shadow-[0_0_50px_rgba(59,130,246,0.5)] transition-all duration-500"
+            type="submit"
             disabled={loading}
           >
             {loading ? 'Initializing System...' : 'Launch Application'}
@@ -152,8 +154,8 @@ export default function SetupPage() {
         </form>
 
         <p className="text-center text-xs text-gray-500 mt-8">
-            This account will have unrestricted access to all aspects of the multi-tenant system.
-            Keep these credentials extremely secure.
+          This account will have unrestricted access to all aspects of the multi-tenant system.
+          Keep these credentials extremely secure.
         </p>
       </div>
     </div>

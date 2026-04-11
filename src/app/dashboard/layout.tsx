@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { authService, UserToken } from '../../services/auth';
 import { Header } from '../../components/layout/Header';
 import { Sidebar } from '../../components/layout/Sidebar';
+import { LoadingScreen } from '@/components/ui/LoadingScreen';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -22,7 +23,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [router]);
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return <LoadingScreen />
   }
 
   return (

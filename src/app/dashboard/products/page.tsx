@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchApi } from '../../../services/api';
 import { authService } from '../../../services/auth';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/Table';
@@ -9,18 +9,21 @@ import { Button } from '../../../components/ui/Button';
 import { Modal } from '../../../components/ui/Modal';
 import { Input } from '../../../components/ui/Input';
 import { Plus } from 'lucide-react';
+import { useIntersectionObserver } from '../../../hooks/useIntersectionObserver';
 
 import { toast } from 'sonner';
 
-import { Edit2, Trash2, Package } from 'lucide-react';
+import { Edit2, Trash2, Package, Loader2, Database } from 'lucide-react';
 import { LoadingScreen } from '../../../components/ui/LoadingScreen';
+import { StockIntakeModal } from '../../../components/Products/StockIntakeModal';
 
 export default function ProductsPage() {
   const queryClient = useQueryClient();
   const user = authService.getCurrentUser();
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
-  
+
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isIntakeModalOpen, setIsIntakeModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -30,10 +33,34 @@ export default function ProductsPage() {
     unitId: ''
   });
 
-  const { data: products, isLoading } = useQuery({
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading
+  } = useInfiniteQuery({
     queryKey: ['products'],
-    queryFn: () => fetchApi<any[]>(isSuperAdmin ? '/products/all' : '/products'),
+    queryFn: ({ pageParam = 1 }) =>
+      fetchApi<any[]>(`${isSuperAdmin ? '/products/all' : '/products'}?page=${pageParam}&limit=20`),
+    getNextPageParam: (lastPage, allPages) => {
+      // If the last page had fewer items than our limit (20), we've reached the end
+      return lastPage.length === 20 ? allPages.length + 1 : undefined;
+    },
+    initialPageParam: 1,
   });
+
+  const products = data?.pages.flatMap(page => page) || [];
+
+  const { targetRef, isIntersecting } = useIntersectionObserver({
+    threshold: 0.1,
+  });
+
+  useEffect(() => {
+    if (isIntersecting && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [isIntersecting, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const { data: units } = useQuery({
     queryKey: ['units'],
@@ -113,7 +140,7 @@ export default function ProductsPage() {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <LoadingScreen />;
 
   return (
     <div className="space-y-6 animate-in fade-in">
@@ -124,9 +151,14 @@ export default function ProductsPage() {
             {isSuperAdmin ? 'All products across all units' : 'Products available in your unit'}
           </p>
         </div>
-        <Button onClick={() => { resetForm(); setIsModalOpen(true); }}>
-          <Plus className="mr-2 h-4 w-4" /> Add Product
-        </Button>
+        <div className="flex gap-3">
+          <Button variant="outline" className="border-primary/50 text-primary hover:bg-primary/10" onClick={() => setIsIntakeModalOpen(true)}>
+            <Database className="mr-2 h-4 w-4" /> Stock Intake
+          </Button>
+          <Button onClick={() => { resetForm(); setIsModalOpen(true); }}>
+            <Plus className="mr-2 h-4 w-4" /> Add Product
+          </Button>
+        </div>
       </div>
 
       <Table>
@@ -145,17 +177,17 @@ export default function ProductsPage() {
             <TableRow key={product._id} className="group">
               <TableCell className="font-medium text-white">
                 <div className="flex items-center gap-3">
-                   <div className="h-8 w-8 bg-white/5 rounded flex items-center justify-center">
-                      <Package className="h-4 w-4 text-gray-500" />
-                   </div>
-                   {product.name}
+                  <div className="h-8 w-8 bg-white/5 rounded flex items-center justify-center">
+                    <Package className="h-4 w-4 text-gray-500" />
+                  </div>
+                  {product.name}
                 </div>
               </TableCell>
               <TableCell className="text-primary font-bold">₦{product.price.toLocaleString()}</TableCell>
               <TableCell>
-                 <span className={`${product.stock < 10 ? 'text-orange-400' : 'text-gray-400'}`}>
-                    {product.stock}
-                 </span>
+                <span className={`${product.stock < 10 ? 'text-orange-400' : 'text-gray-400'}`}>
+                  {product.stock}
+                </span>
               </TableCell>
               <TableCell className="text-gray-500 text-xs">{product.sku}</TableCell>
               {isSuperAdmin && (
@@ -178,25 +210,40 @@ export default function ProductsPage() {
         </TableBody>
       </Table>
 
+      {/* Sentinel for Infinite Scroll */}
+      <div ref={targetRef} className="py-8 flex justify-center">
+        {isFetchingNextPage ? (
+          <div className="flex items-center gap-2 text-primary animate-pulse">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span className="text-sm font-medium">Loading more products...</span>
+          </div>
+        ) : hasNextPage ? (
+          <div className="h-1" />
+        ) : products.length > 0 ? (
+          <p className="text-xs text-gray-600 italic">End of catalog</p>
+        ) : null}
+      </div>
+
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingProduct ? 'Edit Product' : 'Add New Product'}>
         <div className="space-y-4 pt-4">
           {isSuperAdmin && !editingProduct && (
             <div>
               <label className="text-sm font-medium mb-1.5 block text-gray-300">Target Unit</label>
-              <select 
+              <select
                 title="Select Unit"
                 value={formData.unitId}
                 onChange={(e) => setFormData({ ...formData, unitId: e.target.value })}
-                className="w-full flex h-12 rounded-xl bg-black/40 border border-[#27272a] px-4 py-2 text-sm text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all outline-none"
+                className="w-full flex h-12 rounded-xl bg-black border border-[#27272a] px-4 py-2 text-sm text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all outline-none"
               >
                 <option value="">Select a unit...</option>
+                <option value="all" className="text-white font-bold">★ Every Unit (Global Distribution)</option>
                 {units?.map(u => <option key={u._id} value={u._id}>{u.name}</option>)}
               </select>
             </div>
           )}
           <div>
             <label className="text-sm font-medium mb-1.5 block text-gray-300">Product Name</label>
-            <Input 
+            <Input
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="e.g. Premium Coffee Beans"
@@ -205,7 +252,7 @@ export default function ProductsPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium mb-1.5 block text-gray-300">Price (₦)</label>
-              <Input 
+              <Input
                 type="number"
                 step="0.01"
                 value={formData.price}
@@ -215,7 +262,7 @@ export default function ProductsPage() {
             </div>
             <div>
               <label className="text-sm font-medium mb-1.5 block text-gray-300">Current Stock</label>
-              <Input 
+              <Input
                 type="number"
                 value={formData.stock}
                 onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
@@ -225,14 +272,14 @@ export default function ProductsPage() {
           </div>
           <div>
             <label className="text-sm font-medium mb-1.5 block text-gray-300">SKU / Code</label>
-            <Input 
+            <Input
               value={formData.sku}
               onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
               placeholder="e.g. CF-001"
             />
           </div>
-          <Button 
-            className="w-full h-12 mt-4" 
+          <Button
+            className="w-full h-12 mt-4"
             onClick={handleSubmit}
             disabled={createProduct.isPending || updateProduct.isPending || !formData.name || !formData.price || !formData.stock || !formData.sku || (isSuperAdmin && !formData.unitId)}
           >
@@ -240,6 +287,8 @@ export default function ProductsPage() {
           </Button>
         </div>
       </Modal>
+
+      <StockIntakeModal isOpen={isIntakeModalOpen} onClose={() => setIsIntakeModalOpen(false)} />
     </div>
   );
 }

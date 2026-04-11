@@ -1,13 +1,15 @@
 'use client'
 
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchApi } from '../../services/api';
 import { Header } from '../../components/layout/Header';
 import { authService } from '../../services/auth';
 import { Button } from '../../components/ui/Button';
-import { Plus, Minus, ShoppingCart, ArrowLeft } from 'lucide-react';
+import { Input } from '../../components/ui/Input';
+import { Plus, Minus, ShoppingCart, ArrowLeft, Search, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useIntersectionObserver } from '../../hooks/useIntersectionObserver';
 
 import { toast } from 'sonner';
 import { ReceiptModal } from '../../components/POS/ReceiptModal';
@@ -19,13 +21,37 @@ export default function POSPage() {
   const user = authService.getCurrentUser();
   const [cart, setCart] = useState<{product: any, qty: number, overridePrice?: number}[]>([]);
   const [customerName, setCustomerName] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [showReceipt, setShowReceipt] = useState(false);
   const [lastTransaction, setLastTransaction] = useState<any>(null);
 
-  const { data: products, isLoading: productsLoading } = useQuery({
-    queryKey: ['products'],
-    queryFn: () => fetchApi<any[]>('/products'),
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: productsLoading
+  } = useInfiniteQuery({
+    queryKey: ['products', 'pos', searchTerm],
+    queryFn: ({ pageParam = 1 }) => 
+      fetchApi<any[]>(`/products?page=${pageParam}&limit=20&search=${searchTerm}`),
+    getNextPageParam: (lastPage, allPages) => {
+      return lastPage.length === 20 ? allPages.length + 1 : undefined;
+    },
+    initialPageParam: 1,
   });
+
+  const products = data?.pages.flatMap(page => page) || [];
+
+  const { targetRef, isIntersecting } = useIntersectionObserver({
+    threshold: 0.1,
+  });
+
+  useEffect(() => {
+    if (isIntersecting && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [isIntersecting, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const createSale = useMutation({
     mutationFn: () => fetchApi<any>('/transactions/sale', {
@@ -51,7 +77,7 @@ export default function POSPage() {
     }
   });
 
-  if (productsLoading) return <LoadingScreen message="Opening Digital Register..." />;
+  if (productsLoading && !searchTerm) return <LoadingScreen message="Opening Digital Register..." />;
 
   const addToCart = (product: any) => {
     setCart(prev => {
@@ -78,7 +104,7 @@ export default function POSPage() {
     setCart(prev => prev.map(i => i.product._id === productId ? { ...i, overridePrice: newPrice } : i));
   };
 
-  const total = cart.reduce((acc, item) => acc + ((item.overridePrice ?? item.product.price) * item.qty), 0);
+  const total = cart.reduce((acc, item) => acc + ((item.overridePrice ?? (item.product.price || 0)) * item.qty), 0);
 
   return (
     <div className="min-h-screen flex flex-col bg-background relative overflow-hidden">
@@ -90,27 +116,64 @@ export default function POSPage() {
       <main className="flex-1 p-6 relative z-10 flex gap-6">
         {/* Products Grid */}
         <div className="flex-1 flex flex-col min-h-0">
-          <div className="flex items-center gap-4 mb-6">
-            <Button variant="ghost" onClick={() => router.push('/dashboard')}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
-            </Button>
-            <h1 className="text-2xl font-bold">Terminal</h1>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" onClick={() => router.push('/dashboard')}>
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back
+              </Button>
+              <h1 className="text-2xl font-bold tracking-tight">Terminal</h1>
+            </div>
+            
+            <div className="relative w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+              <Input
+                placeholder="Search products..."
+                className="pl-10 h-10 bg-black/40 border-white/10 focus:border-primary/50"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto pb-6">
-            {products?.map(product => (
-              <div 
-                key={product._id} 
-                onClick={() => addToCart(product)}
-                className="glass-panel p-4 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all group"
-              >
-                <div className="h-10 w-10 bg-[#27272a] rounded-lg mb-3 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <ShoppingCart className="h-5 w-5 text-gray-400 group-hover:text-primary" />
+
+          <div className="flex-1 overflow-y-auto pb-6 pr-2 custom-scrollbar">
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {products.map(product => (
+                <div 
+                  key={product._id} 
+                  onClick={() => addToCart(product)}
+                  className="glass-panel p-4 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all group flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="h-10 w-10 bg-[#27272a] rounded-lg mb-3 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <ShoppingCart className="h-5 w-5 text-gray-400 group-hover:text-primary" />
+                    </div>
+                    <h3 className="font-semibold text-sm line-clamp-2 leading-tight">{product.name}</h3>
+                  </div>
+                  <div className="mt-3">
+                    <p className="text-primary font-bold">₦{(product.price || 0).toLocaleString()}</p>
+                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-1">{product.stock || 0} in stock</p>
+                  </div>
                 </div>
-                <h3 className="font-semibold text-sm line-clamp-1">{product.name}</h3>
-                <p className="text-primary font-bold mt-1">₦{product.price.toFixed(2)}</p>
-                <p className="text-xs text-gray-500 mt-2">{product.stockQuantity} in stock</p>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            {/* Sentinel for Infinite Scroll */}
+            <div ref={targetRef} className="py-8 flex justify-center">
+              {isFetchingNextPage ? (
+                <div className="flex items-center gap-2 text-primary animate-pulse">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span className="text-xs font-bold uppercase">Loading products...</span>
+                </div>
+              ) : hasNextPage ? (
+                <div className="h-1" />
+              ) : products.length > 0 ? (
+                <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest">End of Catalog</p>
+              ) : !productsLoading && (
+                <div className="text-center py-12">
+                   <p className="text-gray-500 italic">No products found matching "{searchTerm}"</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

@@ -1,13 +1,14 @@
 'use client'
 
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchApi } from '../../../services/api';
 import { authService } from '../../../services/auth';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/Table';
 import { Button } from '../../../components/ui/Button';
-import { Download } from 'lucide-react';
+import { Download, Loader2 } from 'lucide-react';
 import { ReceiptModal } from '../../../components/POS/ReceiptModal';
+import { useIntersectionObserver } from '../../../hooks/useIntersectionObserver';
 
 import { LoadingScreen } from '../../../components/ui/LoadingScreen';
 
@@ -15,7 +16,7 @@ export default function TransactionsPage() {
   const [showReceipt, setShowReceipt] = useState(false);
   const [selectedTx, setSelectedTx] = useState<any>(null);
   const [unitFilter, setUnitFilter] = useState<string>('');
-  
+
   const user = authService.getCurrentUser();
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
@@ -25,10 +26,31 @@ export default function TransactionsPage() {
     enabled: isSuperAdmin,
   });
 
-  const { data: transactions, isLoading } = useQuery({
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading
+  } = useInfiniteQuery({
     queryKey: ['transactions', unitFilter],
-    queryFn: () => fetchApi<any[]>(`${isSuperAdmin ? '/transactions/all' : '/transactions'}${unitFilter ? `?unitId=${unitFilter}` : ''}`),
+    queryFn: ({ pageParam = 1 }) => 
+      fetchApi<any[]>(`${isSuperAdmin ? '/transactions/all' : '/transactions'}?page=${pageParam}&limit=50${unitFilter ? `&unitId=${unitFilter}` : ''}`),
+    getNextPageParam: (lastPage, allPages) => {
+      return lastPage.length === 50 ? allPages.length + 1 : undefined;
+    },
+    initialPageParam: 1,
   });
+
+  const transactions = data?.pages.flatMap(p => p) || [];
+
+  const { targetRef, isIntersecting } = useIntersectionObserver({ threshold: 0.1 });
+
+  useEffect(() => {
+    if (isIntersecting && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [isIntersecting, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleShowReceipt = (tx: any) => {
     setSelectedTx(tx);
@@ -48,7 +70,7 @@ export default function TransactionsPage() {
         {isSuperAdmin && (
           <div className="flex items-center gap-2 bg-white/5 border border-white/10 p-1.5 rounded-xl">
             <span className="text-[10px] font-black uppercase text-gray-500 ml-2">Filter by Unit:</span>
-            <select 
+            <select
               value={unitFilter}
               onChange={(e) => setUnitFilter(e.target.value)}
               className="bg-transparent text-sm font-semibold outline-none text-primary cursor-pointer pr-4"
@@ -82,11 +104,10 @@ export default function TransactionsPage() {
               <TableCell className="font-medium capitalize">{tx.type}</TableCell>
               <TableCell>₦{tx.totalAmount?.toLocaleString() || tx.total?.toLocaleString()}</TableCell>
               <TableCell>
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                  tx.status === 'COMPLETED' ? 'bg-green-500/20 text-green-400' :
-                  tx.status === 'REFUNDED' ? 'bg-orange-500/20 text-orange-400' :
-                  'bg-red-500/20 text-red-400'
-                }`}>
+                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${tx.status === 'COMPLETED' ? 'bg-green-500/20 text-green-400' :
+                    tx.status === 'REFUNDED' ? 'bg-orange-500/20 text-orange-400' :
+                      'bg-red-500/20 text-red-400'
+                  }`}>
                   {tx.status}
                 </span>
               </TableCell>
@@ -94,10 +115,10 @@ export default function TransactionsPage() {
               <TableCell className="text-gray-400 text-xs">{tx.items?.length || 0} items</TableCell>
               {isSuperAdmin && (
                 <TableCell>
-                   <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-primary/40" />
-                      <span className="text-xs font-medium">{tx.unitId?.name || 'Loading...'}</span>
-                   </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-primary/40" />
+                    <span className="text-xs font-medium">{tx.unitId?.name || 'Unknown'}</span>
+                  </div>
                 </TableCell>
               )}
               <TableCell>
@@ -110,14 +131,26 @@ export default function TransactionsPage() {
         </TableBody>
       </Table>
 
-      <div className="mt-4 text-[10px] text-gray-600 font-bold uppercase tracking-widest text-center">
-         Showing {transactions?.length || 0} recent transactions
+      {/* Sentinel for Infinite Scroll */}
+      <div ref={targetRef} className="py-8 flex justify-center">
+        {isFetchingNextPage ? (
+          <div className="flex items-center gap-2 text-primary animate-pulse">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span className="text-sm font-medium">Loading more history...</span>
+          </div>
+        ) : hasNextPage ? (
+          <div className="h-1" />
+        ) : transactions.length > 0 ? (
+          <div className="mt-4 text-[10px] text-gray-600 font-bold uppercase tracking-widest text-center">
+            Showing {transactions.length} record(s). End of history.
+          </div>
+        ) : null}
       </div>
 
-      <ReceiptModal 
-        isOpen={showReceipt} 
-        onClose={() => setShowReceipt(false)} 
-        transaction={selectedTx} 
+      <ReceiptModal
+        isOpen={showReceipt}
+        onClose={() => setShowReceipt(false)}
+        transaction={selectedTx}
       />
     </div>
   );

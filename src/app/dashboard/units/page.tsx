@@ -39,7 +39,7 @@ export default function UnitsPage() {
     }
   });
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <LoadingScreen />;
 
   return (
     <div className="space-y-6 animate-in fade-in">
