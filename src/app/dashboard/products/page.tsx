@@ -10,23 +10,35 @@ import { Modal } from '../../../components/ui/Modal';
 import { Input } from '../../../components/ui/Input';
 import { Plus } from 'lucide-react';
 
+import { toast } from 'sonner';
+
+import { Edit2, Trash2, Package } from 'lucide-react';
+import { LoadingScreen } from '../../../components/ui/LoadingScreen';
+
 export default function ProductsPage() {
   const queryClient = useQueryClient();
   const user = authService.getCurrentUser();
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
-  const isManager = user?.role === 'UNIT_MANAGER';
-
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: '',
     price: '',
     stock: '',
-    sku: ''
+    sku: '',
+    unitId: ''
   });
 
   const { data: products, isLoading } = useQuery({
     queryKey: ['products'],
     queryFn: () => fetchApi<any[]>(isSuperAdmin ? '/products/all' : '/products'),
+  });
+
+  const { data: units } = useQuery({
+    queryKey: ['units'],
+    queryFn: () => fetchApi<any[]>('/units'),
+    enabled: isSuperAdmin,
   });
 
   const createProduct = useMutation({
@@ -41,9 +53,65 @@ export default function ProductsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       setIsModalOpen(false);
-      setFormData({ name: '', price: '', stock: '', sku: '' });
-    }
+      resetForm();
+      toast.success('Product created successfully!');
+    },
+    onError: (err: any) => toast.error(err.message || 'Failed to create product')
   });
+
+  const updateProduct = useMutation({
+    mutationFn: (data: any) => fetchApi(`/products/${editingProduct._id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        ...data,
+        price: parseFloat(data.price),
+        stock: parseInt(data.stock),
+      }),
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      setIsModalOpen(false);
+      resetForm();
+      toast.success('Product updated successfully!');
+    },
+    onError: (err: any) => toast.error(err.message || 'Failed to update product')
+  });
+
+  const deleteProduct = useMutation({
+    mutationFn: (product: any) => fetchApi(`/products/${product._id}${isSuperAdmin ? `?unitId=${product.unitId?._id || product.unitId}` : ''}`, {
+      method: 'DELETE',
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast.success('Product deleted successfully!');
+    },
+    onError: (err: any) => toast.error(err.message || 'Failed to delete product')
+  });
+
+  const resetForm = () => {
+    setFormData({ name: '', price: '', stock: '', sku: '', unitId: '' });
+    setEditingProduct(null);
+  };
+
+  const handleEdit = (product: any) => {
+    setEditingProduct(product);
+    setFormData({
+      name: product.name,
+      price: product.price.toString(),
+      stock: product.stock.toString(),
+      sku: product.sku,
+      unitId: product.unitId?._id || product.unitId
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleSubmit = () => {
+    if (editingProduct) {
+      updateProduct.mutate(formData);
+    } else {
+      createProduct.mutate(formData);
+    }
+  };
 
   if (isLoading) return <div>Loading...</div>;
 
@@ -51,47 +119,81 @@ export default function ProductsPage() {
     <div className="space-y-6 animate-in fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Products</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-white">Products Inventory</h1>
           <p className="text-gray-400 mt-1">
             {isSuperAdmin ? 'All products across all units' : 'Products available in your unit'}
           </p>
         </div>
-        {isManager && (
-          <Button onClick={() => setIsModalOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" /> Add Product
-          </Button>
-        )}
+        <Button onClick={() => { resetForm(); setIsModalOpen(true); }}>
+          <Plus className="mr-2 h-4 w-4" /> Add Product
+        </Button>
       </div>
 
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
+            <TableHead>Product</TableHead>
             <TableHead>Price</TableHead>
-            <TableHead>Stock Qty</TableHead>
+            <TableHead>Stock</TableHead>
             <TableHead>SKU</TableHead>
             {isSuperAdmin && <TableHead>Unit</TableHead>}
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {products?.map((product: any) => (
-            <TableRow key={product._id}>
-              <TableCell className="font-medium">{product.name}</TableCell>
-              <TableCell>₦{product.price.toFixed(2)}</TableCell>
-              <TableCell>{product.stock}</TableCell>
-              <TableCell>{product.sku}</TableCell>
+            <TableRow key={product._id} className="group">
+              <TableCell className="font-medium text-white">
+                <div className="flex items-center gap-3">
+                   <div className="h-8 w-8 bg-white/5 rounded flex items-center justify-center">
+                      <Package className="h-4 w-4 text-gray-500" />
+                   </div>
+                   {product.name}
+                </div>
+              </TableCell>
+              <TableCell className="text-primary font-bold">₦{product.price.toLocaleString()}</TableCell>
+              <TableCell>
+                 <span className={`${product.stock < 10 ? 'text-orange-400' : 'text-gray-400'}`}>
+                    {product.stock}
+                 </span>
+              </TableCell>
+              <TableCell className="text-gray-500 text-xs">{product.sku}</TableCell>
               {isSuperAdmin && (
-                <TableCell className="text-gray-400">
+                <TableCell className="text-gray-400 text-xs">
                   {product.unitId?.name || 'Unknown'}
                 </TableCell>
               )}
+              <TableCell className="text-right">
+                <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-400 hover:bg-blue-400/10" onClick={() => handleEdit(product)}>
+                    <Edit2 className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-red-400 hover:bg-red-400/10" onClick={() => deleteProduct.mutate(product)}>
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add New Product">
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingProduct ? 'Edit Product' : 'Add New Product'}>
         <div className="space-y-4 pt-4">
+          {isSuperAdmin && !editingProduct && (
+            <div>
+              <label className="text-sm font-medium mb-1.5 block text-gray-300">Target Unit</label>
+              <select 
+                title="Select Unit"
+                value={formData.unitId}
+                onChange={(e) => setFormData({ ...formData, unitId: e.target.value })}
+                className="w-full flex h-12 rounded-xl bg-black/40 border border-[#27272a] px-4 py-2 text-sm text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all outline-none"
+              >
+                <option value="">Select a unit...</option>
+                {units?.map(u => <option key={u._id} value={u._id}>{u.name}</option>)}
+              </select>
+            </div>
+          )}
           <div>
             <label className="text-sm font-medium mb-1.5 block text-gray-300">Product Name</label>
             <Input 
@@ -112,7 +214,7 @@ export default function ProductsPage() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1.5 block text-gray-300">Initial Stock</label>
+              <label className="text-sm font-medium mb-1.5 block text-gray-300">Current Stock</label>
               <Input 
                 type="number"
                 value={formData.stock}
@@ -131,10 +233,10 @@ export default function ProductsPage() {
           </div>
           <Button 
             className="w-full h-12 mt-4" 
-            onClick={() => createProduct.mutate(formData)}
-            disabled={createProduct.isPending || !formData.name || !formData.price || !formData.stock || !formData.sku}
+            onClick={handleSubmit}
+            disabled={createProduct.isPending || updateProduct.isPending || !formData.name || !formData.price || !formData.stock || !formData.sku || (isSuperAdmin && !formData.unitId)}
           >
-            {createProduct.isPending ? 'Saving...' : 'Create Product'}
+            {(createProduct.isPending || updateProduct.isPending) ? 'Saving...' : (editingProduct ? 'Update Details' : 'Create Product')}
           </Button>
         </div>
       </Modal>

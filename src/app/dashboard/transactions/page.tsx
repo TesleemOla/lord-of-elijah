@@ -9,6 +9,8 @@ import { Button } from '../../../components/ui/Button';
 import { Download } from 'lucide-react';
 import { ReceiptModal } from '../../../components/POS/ReceiptModal';
 
+import { LoadingScreen } from '../../../components/ui/LoadingScreen';
+
 export default function TransactionsPage() {
   const [showReceipt, setShowReceipt] = useState(false);
   const [selectedTx, setSelectedTx] = useState<any>(null);
@@ -33,7 +35,7 @@ export default function TransactionsPage() {
     setShowReceipt(true);
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <LoadingScreen message="Retrieving Master Logs..." />;
 
   return (
     <div className="space-y-6 animate-in fade-in pb-12">

@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 
 import { toast } from 'sonner';
 import { ReceiptModal } from '../../components/POS/ReceiptModal';
+import { LoadingScreen } from '../../components/ui/LoadingScreen';
 
 export default function POSPage() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function POSPage() {
   const [showReceipt, setShowReceipt] = useState(false);
   const [lastTransaction, setLastTransaction] = useState<any>(null);
 
-  const { data: products } = useQuery({
+  const { data: products, isLoading: productsLoading } = useQuery({
     queryKey: ['products'],
     queryFn: () => fetchApi<any[]>('/products'),
   });
@@ -49,6 +50,8 @@ export default function POSPage() {
       toast.error(err.message || 'Failed to complete sale');
     }
   });
+
+  if (productsLoading) return <LoadingScreen message="Opening Digital Register..." />;
 
   const addToCart = (product: any) => {
     setCart(prev => {

@@ -7,7 +7,12 @@ import { Button } from '../../../components/ui/Button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/Table';
 import { Modal } from '../../../components/ui/Modal';
 import { Input } from '../../../components/ui/Input';
+import { PasswordInput } from '../../../components/ui/PasswordInput';
 import { Plus, UserPlus } from 'lucide-react';
+
+import { toast } from 'sonner';
+
+import { LoadingScreen } from '../../../components/ui/LoadingScreen';
 
 export default function UsersPage() {
   const queryClient = useQueryClient();
@@ -40,11 +45,14 @@ export default function UsersPage() {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       setIsModalOpen(false);
       setFormData({ email: '', password: '', unitId: '' });
-      alert('Unit Manager created successfully!');
+      toast.success('Unit Manager created successfully!');
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to create manager account');
     }
   });
 
-  if (usersLoading) return <div>Loading...</div>;
+  if (usersLoading) return <LoadingScreen message="Identifying Personnel..." />;
 
   return (
     <div className="space-y-6 animate-in fade-in">
@@ -103,8 +111,7 @@ export default function UsersPage() {
             </div>
             <div>
               <label className="text-sm font-medium mb-1.5 block text-gray-300">Initial Password</label>
-              <Input 
-                type="password"
+              <PasswordInput 
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 placeholder="••••••••"

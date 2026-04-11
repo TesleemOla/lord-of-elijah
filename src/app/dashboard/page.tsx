@@ -9,6 +9,8 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
 
+import { LoadingScreen } from '../../components/ui/LoadingScreen';
+
 export default function DashboardPage() {
   const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month');
   const [activeMetric, setActiveMetric] = useState<'revenue' | 'count'>('revenue');
@@ -34,16 +36,8 @@ export default function DashboardPage() {
     enabled: isSuperAdmin,
   });
 
-  if (summaryLoading) {
-    return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-8 w-48 bg-white/10 rounded"></div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-           {[1,2,3].map(i => <div key={i} className="h-32 glass-panel"></div>)}
-        </div>
-        <div className="h-[400px] glass-panel bg-white/5 rounded-2xl"></div>
-      </div>
-    );
+  if (summaryLoading || analyticsLoading) {
+    return <LoadingScreen message="Assembling Business Intelligence..." />;
   }
 
   const focusedUnit = unitPerformance?.find(u => u.unitId === focusedUnitId);

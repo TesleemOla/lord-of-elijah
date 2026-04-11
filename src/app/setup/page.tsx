@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { authService } from '../../services/auth';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { Activity, ShieldCheck, Rocket } from 'lucide-react';
+import { PasswordInput } from '../../components/ui/PasswordInput';
+import { toast } from 'sonner';
 
 export default function SetupPage() {
   const router = useRouter();
@@ -50,7 +51,7 @@ export default function SetupPage() {
     
     try {
       await authService.setupInauguralUser({ email, password });
-      alert('Administrator account created successfully! You can now log in.');
+      toast.success('Administrator account created successfully! Redirecting...');
       router.push('/login');
     } catch (err: any) {
       setError(err.message || 'Setup failed. Please try again.');
@@ -60,14 +61,7 @@ export default function SetupPage() {
   };
 
   if (checking) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse flex flex-col items-center">
-          <Activity className="h-12 w-12 text-primary animate-bounce mb-4" />
-          <p className="text-gray-400">Initializing TransactFlow...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Initializing Lord of Elijah Transact..." fullScreen />;
   }
 
   return (
@@ -128,8 +122,7 @@ export default function SetupPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-300 ml-1">Secure Password</label>
-                <Input 
-                type="password" 
+                <PasswordInput 
                 placeholder="••••••••" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -139,8 +132,7 @@ export default function SetupPage() {
             </div>
             <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-300 ml-1">Confirm Password</label>
-                <Input 
-                type="password" 
+                <PasswordInput 
                 placeholder="••••••••" 
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}

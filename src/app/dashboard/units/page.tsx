@@ -9,6 +9,10 @@ import { Modal } from '../../../components/ui/Modal';
 import { Input } from '../../../components/ui/Input';
 import { Plus } from 'lucide-react';
 
+import { toast } from 'sonner';
+
+import { LoadingScreen } from '../../../components/ui/LoadingScreen';
+
 export default function UnitsPage() {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,6 +32,10 @@ export default function UnitsPage() {
       queryClient.invalidateQueries({ queryKey: ['units'] });
       setIsModalOpen(false);
       setNewUnitName('');
+      toast.success('Unit created successfully!');
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to create unit');
     }
   });
 
