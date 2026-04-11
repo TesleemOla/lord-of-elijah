@@ -22,7 +22,7 @@ export default function UnitsPage() {
   const createUnit = useMutation({
     mutationFn: (name: string) => fetchApi('/units', {
       method: 'POST',
-      body: JSON.stringify({ name, location: 'HQ' }),
+      body: JSON.stringify({ name, location: name }),
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['units'] });
@@ -68,14 +68,14 @@ export default function UnitsPage() {
         <div className="space-y-4">
           <div>
             <label className="text-sm font-medium mb-1 block">Unit Name</label>
-            <Input 
+            <Input
               value={newUnitName}
               onChange={(e) => setNewUnitName(e.target.value)}
               placeholder="e.g. Branch A"
             />
           </div>
-          <Button 
-            className="w-full" 
+          <Button
+            className="w-full"
             onClick={() => createUnit.mutate(newUnitName)}
             disabled={createUnit.isPending || !newUnitName}
           >
