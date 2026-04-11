@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #09090b;
+  --foreground: #fafafa;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --card: rgba(24, 24, 27, 0.7);
+  --border: rgba(63, 63, 70, 0.5);
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  /* subtle deep gradient background */
+  background: radial-gradient(circle at top left, #121826 0%, #09090b 100%);
+  background-attachment: fixed;
+}
+
+@layer components {
+  /* Glassmorphism Panel styles */
+  .glass-panel {
+    @apply bg-[var(--card)] backdrop-blur-lg border border-[var(--border)] shadow-xl rounded-2xl;
+  }
+}
