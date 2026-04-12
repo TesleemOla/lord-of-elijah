@@ -197,9 +197,14 @@ export function ReceiptModal({ isOpen, onClose, transaction }: ReceiptModalProps
               <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">Billed To</p>
               <p className="text-xl font-black text-indigo-900">{transaction.customerName || 'Guest Customer'}</p>
               <p className="text-[10px] text-gray-400 mt-1">Status: <span className={`font-bold uppercase ${
-                transaction.type === 'SALE' ? 'text-green-600' : 
-                transaction.type === 'REFUND' ? 'text-amber-600' : 'text-red-600'
-              }`}>{transaction.type === 'SALE' ? 'Paid' : transaction.type === 'REFUND' ? 'Refunded' : 'Voided'}</span></p>
+                transaction.type === 'SALE' 
+                  ? ((transaction.amountPaid ?? transaction.total) < transaction.total ? 'text-amber-600' : 'text-green-600')
+                  : (transaction.type === 'REFUND' ? 'text-amber-600' : 'text-red-600')
+              }`}>
+                {transaction.type === 'SALE' 
+                  ? ((transaction.amountPaid ?? transaction.total) < transaction.total ? 'Partial Payment' : 'Paid')
+                  : (transaction.type === 'REFUND' ? 'Refunded' : 'Voided')}
+              </span></p>
             </div>
           </div>
 
@@ -235,11 +240,25 @@ export function ReceiptModal({ isOpen, onClose, transaction }: ReceiptModalProps
              <div className="max-w-[200px]">
                 <p className="text-[9px] leading-relaxed text-gray-400 font-medium">This document confirms the status of your transaction. For any queries, please visit the authorized unit.</p>
              </div>
-             <div className="space-y-3 w-full max-w-[200px]">
+              <div className="space-y-3 w-full max-w-[200px]">
                 <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase">
                     <span>Subtotal</span>
                     <span>₦{(transaction.total || transaction.totalAmount).toLocaleString()}</span>
                 </div>
+                {transaction.type === 'SALE' && (
+                  <>
+                    <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase">
+                        <span>Amount Paid</span>
+                        <span>₦{(transaction.amountPaid ?? (transaction.total || transaction.totalAmount)).toLocaleString()}</span>
+                    </div>
+                    {((transaction.total || transaction.totalAmount) - (transaction.amountPaid ?? (transaction.total || transaction.totalAmount))) > 0 && (
+                      <div className="flex justify-between text-[10px] font-bold text-red-500 uppercase">
+                          <span>Balance Due</span>
+                          <span>₦{((transaction.total || transaction.totalAmount) - (transaction.amountPaid ?? (transaction.total || transaction.totalAmount))).toLocaleString()}</span>
+                      </div>
+                    )}
+                  </>
+                )}
                 <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase">
                     <span>Tax (0%)</span>
                     <span>₦0.00</span>

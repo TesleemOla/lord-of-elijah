@@ -25,6 +25,8 @@ export default function POSPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showReceipt, setShowReceipt] = useState(false);
   const [lastTransaction, setLastTransaction] = useState<any>(null);
+  const [amountPaid, setAmountPaid] = useState<number | string>('');
+  const [isAmountPaidManual, setIsAmountPaidManual] = useState(false);
 
   const {
     data,
@@ -63,7 +65,8 @@ export default function POSPage() {
           qty: i.qty,
           overridePrice: i.overridePrice
         })),
-        customerName: customerName || 'Guest'
+        customerName: customerName || 'Guest',
+        amountPaid: amountPaid === '' ? total : Number(amountPaid)
       }),
     }),
     onSuccess: (data) => {
@@ -77,6 +80,22 @@ export default function POSPage() {
       toast.error(err.message || 'Failed to complete sale');
     }
   });
+
+  const total = cart.reduce((acc, item) => acc + ((item.overridePrice ?? (item.product.price || 0)) * item.qty), 0);
+
+  useEffect(() => {
+    if (!isAmountPaidManual) {
+      setAmountPaid(total);
+    }
+  }, [total, isAmountPaidManual]);
+
+  const handleAmountPaidChange = (val: string) => {
+    setAmountPaid(val);
+    setIsAmountPaidManual(true);
+    if (val === '' || Number(val) === total) {
+      setIsAmountPaidManual(false);
+    }
+  };
 
   if (productsLoading && !searchTerm) return <LoadingScreen message="Opening Digital Register..." />;
 
@@ -111,8 +130,6 @@ export default function POSPage() {
     const newPrice = price === '' ? undefined : parseFloat(price);
     setCart(prev => prev.map(i => i.product._id === productId ? { ...i, overridePrice: newPrice } : i));
   };
-
-  const total = cart.reduce((acc, item) => acc + ((item.overridePrice ?? (item.product.price || 0)) * item.qty), 0);
 
   return (
     <div className="min-h-screen flex flex-col bg-background relative overflow-hidden">
@@ -262,17 +279,37 @@ export default function POSPage() {
           </div>
 
           <div className="p-4 border-t border-[var(--border)] bg-black/40">
-            <div className="flex justify-between mb-4">
-              <span className="text-gray-400">Total</span>
-              <span className="text-2xl font-bold text-primary">₦{total.toFixed(2)}</span>
+            <div className="space-y-3 mb-4">
+              <div>
+                <p className="text-[10px] font-bold uppercase text-gray-500 mb-1 pl-1">Customer Name</p>
+                <input 
+                  type="text" 
+                  placeholder="Optional"
+                  value={customerName}
+                  onChange={e => setCustomerName(e.target.value)}
+                  className="w-full p-2.5 rounded-lg bg-black/30 border border-[#3f3f46] text-sm text-white outline-none focus:border-primary transition-colors"
+                />
+              </div>
+              <div>
+                <div className="flex justify-between items-end mb-1 pl-1">
+                  <p className="text-[10px] font-bold uppercase text-primary">Amount Paid</p>
+                  {Number(amountPaid) < total && (
+                    <p className="text-[10px] font-bold uppercase text-red-500">Balance: ₦{(total - Number(amountPaid)).toLocaleString()}</p>
+                  )}
+                </div>
+                <input 
+                  type="number" 
+                  step="0.01"
+                  placeholder="0.00"
+                  value={amountPaid}
+                  onChange={e => handleAmountPaidChange(e.target.value)}
+                  className={clsx(
+                    "w-full p-2.5 rounded-lg bg-black/30 border text-sm font-bold outline-none transition-colors",
+                    Number(amountPaid) < total ? "border-amber-500/50 text-amber-500" : "border-[#3f3f46] text-primary focus:border-primary"
+                  )}
+                />
+              </div>
             </div>
-            <input 
-              type="text" 
-              placeholder="Customer Name (Optional)"
-              value={customerName}
-              onChange={e => setCustomerName(e.target.value)}
-              className="w-full mb-4 p-3 rounded-lg bg-black/30 border border-[#3f3f46] text-white outline-none focus:border-primary transition-colors"
-            />
             <Button 
               className="w-full h-14 text-lg" 
               onClick={() => createSale.mutate()}
