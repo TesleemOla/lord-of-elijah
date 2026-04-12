@@ -185,9 +185,12 @@ export default function ProductsPage() {
               </TableCell>
               <TableCell className="text-primary font-bold">₦{product.price.toLocaleString()}</TableCell>
               <TableCell>
-                <span className={`${product.stock < 10 ? 'text-orange-400' : 'text-gray-400'}`}>
-                  {product.stock}
-                </span>
+                <div className="flex items-center gap-2">
+                  <div className={`h-1.5 w-1.5 rounded-full ${product.stock <= 0 ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]' : product.stock < 10 ? 'bg-amber-500 animate-pulse' : 'bg-green-500'}`} />
+                  <span className={`${product.stock <= 0 ? 'text-red-500 font-bold' : product.stock < 10 ? 'text-amber-500 font-bold' : 'text-gray-400'}`}>
+                    {product.stock}
+                  </span>
+                </div>
               </TableCell>
               <TableCell className="text-gray-500 text-xs">{product.sku}</TableCell>
               {isSuperAdmin && (
@@ -224,8 +227,24 @@ export default function ProductsPage() {
         ) : null}
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingProduct ? 'Edit Product' : 'Add New Product'}>
-        <div className="space-y-4 pt-4">
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        title={editingProduct ? 'Edit Product' : 'Add New Product'}
+        footer={
+          <div className="flex gap-3">
+            <Button variant="outline" className="flex-1" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+            <Button
+              className="flex-1 h-12"
+              onClick={handleSubmit}
+              disabled={createProduct.isPending || updateProduct.isPending || !formData.name || !formData.price || !formData.stock || !formData.sku || (isSuperAdmin && !formData.unitId)}
+            >
+              {(createProduct.isPending || updateProduct.isPending) ? 'Saving...' : (editingProduct ? 'Update Details' : 'Create Product')}
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
           {isSuperAdmin && !editingProduct && (
             <div>
               <label className="text-sm font-medium mb-1.5 block text-gray-300">Target Unit</label>
@@ -278,13 +297,6 @@ export default function ProductsPage() {
               placeholder="e.g. CF-001"
             />
           </div>
-          <Button
-            className="w-full h-12 mt-4"
-            onClick={handleSubmit}
-            disabled={createProduct.isPending || updateProduct.isPending || !formData.name || !formData.price || !formData.stock || !formData.sku || (isSuperAdmin && !formData.unitId)}
-          >
-            {(createProduct.isPending || updateProduct.isPending) ? 'Saving...' : (editingProduct ? 'Update Details' : 'Create Product')}
-          </Button>
         </div>
       </Modal>
 

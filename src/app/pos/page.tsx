@@ -10,6 +10,7 @@ import { Input } from '../../components/ui/Input';
 import { Plus, Minus, ShoppingCart, ArrowLeft, Search, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useIntersectionObserver } from '../../hooks/useIntersectionObserver';
+import { clsx } from 'clsx';
 
 import { toast } from 'sonner';
 import { ReceiptModal } from '../../components/POS/ReceiptModal';
@@ -82,6 +83,13 @@ export default function POSPage() {
   const addToCart = (product: any) => {
     setCart(prev => {
       const existing = prev.find(i => i.product._id === product._id);
+      const currentQty = existing ? existing.qty : 0;
+      
+      if (currentQty >= (product.stock || 0)) {
+        toast.error(`Cannot add more: only ${product.stock} units in stock.`);
+        return prev;
+      }
+
       if (existing) {
         return prev.map(i => i.product._id === product._id ? { ...i, qty: i.qty + 1 } : i);
       }
@@ -137,24 +145,48 @@ export default function POSPage() {
 
           <div className="flex-1 overflow-y-auto pb-6 pr-2 custom-scrollbar">
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {products.map(product => (
-                <div 
-                  key={product._id} 
-                  onClick={() => addToCart(product)}
-                  className="glass-panel p-4 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all group flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="h-10 w-10 bg-[#27272a] rounded-lg mb-3 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <ShoppingCart className="h-5 w-5 text-gray-400 group-hover:text-primary" />
+              {products.map(product => {
+                const isOutOfStock = (product.stock || 0) <= 0;
+                const isLowStock = (product.stock || 0) < 10;
+                
+                return (
+                  <div 
+                    key={product._id} 
+                    onClick={() => !isOutOfStock && addToCart(product)}
+                    className={clsx(
+                      "glass-panel p-4 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all group flex flex-col justify-between relative overflow-hidden",
+                      isOutOfStock && "opacity-60 grayscale cursor-not-allowed border-red-500/30"
+                    )}
+                  >
+                    {isOutOfStock && (
+                      <div className="absolute top-0 right-0 bg-red-600 text-white text-[8px] font-bold px-2 py-0.5 rounded-bl-lg uppercase tracking-wider z-10">
+                        Out of Stock
+                      </div>
+                    )}
+                    {isLowStock && !isOutOfStock && (
+                      <div className="absolute top-0 right-0 bg-amber-500 text-black text-[8px] font-bold px-2 py-0.5 rounded-bl-lg uppercase tracking-wider z-10">
+                        Low Stock
+                      </div>
+                    )}
+
+                    <div>
+                      <div className="h-10 w-10 bg-[#27272a] rounded-lg mb-3 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <ShoppingCart className="h-5 w-5 text-gray-400 group-hover:text-primary" />
+                      </div>
+                      <h3 className="font-semibold text-sm line-clamp-2 leading-tight">{product.name}</h3>
                     </div>
-                    <h3 className="font-semibold text-sm line-clamp-2 leading-tight">{product.name}</h3>
+                    <div className="mt-3">
+                      <p className="text-primary font-bold">₦{(product.price || 0).toLocaleString()}</p>
+                      <p className={clsx(
+                        "text-[10px] font-bold uppercase tracking-wider mt-1",
+                        isOutOfStock ? "text-red-500" : isLowStock ? "text-amber-500" : "text-gray-500"
+                      )}>
+                        {product.stock || 0} in stock
+                      </p>
+                    </div>
                   </div>
-                  <div className="mt-3">
-                    <p className="text-primary font-bold">₦{(product.price || 0).toLocaleString()}</p>
-                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-1">{product.stock || 0} in stock</p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Sentinel for Infinite Scroll */}

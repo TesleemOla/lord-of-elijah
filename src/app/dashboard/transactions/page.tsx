@@ -100,15 +100,20 @@ export default function TransactionsPage() {
         </TableHeader>
         <TableBody>
           {transactions?.map((tx: any) => (
-            <TableRow key={tx._id}>
+            <TableRow 
+              key={tx._id} 
+              className="group cursor-pointer hover:bg-white/[0.02] transition-colors"
+              onClick={() => handleShowReceipt(tx)}
+            >
               <TableCell className="font-medium capitalize">{tx.type}</TableCell>
               <TableCell>₦{tx.totalAmount?.toLocaleString() || tx.total?.toLocaleString()}</TableCell>
               <TableCell>
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${tx.status === 'COMPLETED' ? 'bg-green-500/20 text-green-400' :
-                    tx.status === 'REFUNDED' ? 'bg-orange-500/20 text-orange-400' :
-                      'bg-red-500/20 text-red-400'
-                  }`}>
-                  {tx.status}
+                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                  tx.type === 'SALE' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
+                  tx.type === 'REFUND' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                  'bg-red-500/10 text-red-400 border border-red-500/20'
+                }`}>
+                  {tx.type === 'SALE' ? 'Completed' : tx.type === 'REFUND' ? 'Refunded' : 'Voided'}
                 </span>
               </TableCell>
               <TableCell>{new Date(tx.createdAt || tx.timestamp).toLocaleString()}</TableCell>
@@ -122,7 +127,15 @@ export default function TransactionsPage() {
                 </TableCell>
               )}
               <TableCell>
-                <Button variant="ghost" size="sm" onClick={() => handleShowReceipt(tx)} className="hover:bg-primary/10 hover:text-primary">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleShowReceipt(tx);
+                  }} 
+                  className="hover:bg-primary/10 hover:text-primary transition-all"
+                >
                   <Download className="w-4 h-4 mr-2" /> Download
                 </Button>
               </TableCell>

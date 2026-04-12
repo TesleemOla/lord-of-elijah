@@ -182,7 +182,7 @@ export default function DashboardPage() {
             </div>
         </div>
 
-        <div className="h-[400px] w-full">
+        <div className="h-[400px] w-full min-h-[400px] min-w-0">
           {analyticsLoading ? (
              <div className="w-full h-full flex items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

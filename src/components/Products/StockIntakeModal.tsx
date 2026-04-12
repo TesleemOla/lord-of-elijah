@@ -87,8 +87,48 @@ export function StockIntakeModal({ isOpen, onClose }: StockIntakeModalProps) {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Stock Intake Tool">
-      <div className="space-y-6 pt-4">
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose} 
+      title="Stock Intake Tool"
+      footer={
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col">
+            <p className="text-xs text-gray-500 italic">
+              {Object.keys(stockUpdates).length} products staged for update
+            </p>
+            {Object.keys(stockUpdates).length > 0 && (
+              <button
+                onClick={() => setStockUpdates({})}
+                className="text-[10px] text-red-400 hover:text-red-300 font-bold uppercase mt-1 flex items-center gap-1"
+              >
+                <Trash2 className="h-3 w-3" /> Clear selection
+              </button>
+            )}
+          </div>
+          <div className="flex gap-3">
+            <Button variant="ghost" onClick={onClose}>Cancel</Button>
+            <Button
+              onClick={handleSave}
+              disabled={submitMutation.isPending || Object.keys(stockUpdates).length === 0}
+            >
+              {submitMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Commit Inventory
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      }
+    >
+      <div className="space-y-6">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
           <Input
@@ -99,7 +139,7 @@ export function StockIntakeModal({ isOpen, onClose }: StockIntakeModalProps) {
           />
         </div>
 
-        <div className="max-h-[50vh] overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+        <div className="space-y-2">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12 text-gray-500">
               <Loader2 className="h-8 w-8 animate-spin mb-2" />
@@ -156,41 +196,6 @@ export function StockIntakeModal({ isOpen, onClose }: StockIntakeModalProps) {
               <p>No products found matching your search.</p>
             </div>
           )}
-        </div>
-
-        <div className="flex items-center justify-between border-t border-white/10 pt-6">
-          <div className="flex flex-col">
-            <p className="text-xs text-gray-500 italic">
-              {Object.keys(stockUpdates).length} products staged for update
-            </p>
-            {Object.keys(stockUpdates).length > 0 && (
-              <button
-                onClick={() => setStockUpdates({})}
-                className="text-[10px] text-red-400 hover:text-red-300 font-bold uppercase mt-1 flex items-center gap-1"
-              >
-                <Trash2 className="h-3 w-3" /> Clear selection
-              </button>
-            )}
-          </div>
-          <div className="flex gap-3">
-            <Button variant="ghost" onClick={onClose}>Cancel</Button>
-            <Button
-              onClick={handleSave}
-              disabled={submitMutation.isPending || Object.keys(stockUpdates).length === 0}
-            >
-              {submitMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Commit Inventory
-                </>
-              )}
-            </Button>
-          </div>
         </div>
       </div>
     </Modal>
