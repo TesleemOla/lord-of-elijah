@@ -3,7 +3,8 @@
 import React, { useRef } from 'react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
-import { Download, CheckCircle2, Trash2, RotateCcw, AlertCircle } from 'lucide-react';
+import { Download, CheckCircle2, Trash2, RotateCcw, AlertCircle, Wallet } from 'lucide-react';
+import { PaymentModal } from '../Transactions/PaymentModal';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import { toast } from 'sonner';
@@ -19,6 +20,7 @@ interface ReceiptModalProps {
 
 export function ReceiptModal({ isOpen, onClose, transaction }: ReceiptModalProps) {
   const receiptRef = useRef<HTMLDivElement>(null);
+  const [showPayment, setShowPayment] = React.useState(false);
   const queryClient = useQueryClient();
   const user = authService.getCurrentUser();
   const isManager = user?.role === 'UNIT_MANAGER';
@@ -56,10 +58,13 @@ export function ReceiptModal({ isOpen, onClose, transaction }: ReceiptModalProps
     if (!receiptRef.current) return;
     
     try {
+      toast.loading('Preparing multi-page receipt...', { id: 'pdf-gen' });
+      
       const canvas = await html2canvas(receiptRef.current, {
-        scale: 3, // High resolution
+        scale: 2, // 2 is usually enough for clarity without massive file size
         useCORS: true,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        logging: false
       });
       
       const imgData = canvas.toDataURL('image/png');
@@ -69,16 +74,34 @@ export function ReceiptModal({ isOpen, onClose, transaction }: ReceiptModalProps
         format: 'a4'
       });
       
-      const imgProps = pdf.getImageProperties(imgData);
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
       
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Receipt_Elijah_${transaction._id?.slice(-6) || 'tx'}.pdf`);
-      toast.success('Receipt Downloaded Successfully');
+      // Calculate how many mm high the whole canvas image should be in the PDF
+      const canvasHeightInMm = (imgHeight * pdfWidth) / imgWidth;
+      
+      let heightLeft = canvasHeightInMm;
+      let position = 0;
+      
+      // Page 1
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, canvasHeightInMm, undefined, 'FAST');
+      heightLeft -= pdfHeight;
+      
+      // Add more pages if content remains
+      while (heightLeft > 0) {
+        position = heightLeft - canvasHeightInMm; // Negative offset to show the next slice
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, canvasHeightInMm, undefined, 'FAST');
+        heightLeft -= pdfHeight;
+      }
+      
+      pdf.save(`Receipt_Elijah_${transaction._id?.slice(-8).toUpperCase() || 'TX'}.pdf`);
+      toast.success('Receipt Saved Successfully', { id: 'pdf-gen' });
     } catch (error) {
       console.error('PDF Generation Error:', error);
-      toast.error('Failed to generate PDF');
+      toast.error('Failed to generate PDF', { id: 'pdf-gen' });
     }
   };
 
@@ -92,23 +115,34 @@ export function ReceiptModal({ isOpen, onClose, transaction }: ReceiptModalProps
       footer={
         <div className="flex flex-col gap-3">
           {isManager && transaction.type === 'SALE' && (
-            <div className="grid grid-cols-2 gap-3">
-              <Button 
-                  variant="outline" 
-                  className="h-10 text-amber-500 border-amber-500/30 hover:bg-amber-500/10 gap-2"
-                  onClick={() => refundMutation.mutate()}
-                  disabled={refundMutation.isPending}
-              >
-                <RotateCcw className="h-4 w-4" /> Issue Refund
-              </Button>
-              <Button 
-                  variant="outline" 
-                  className="h-10 text-red-500 border-red-500/30 hover:bg-red-500/10 gap-2"
-                  onClick={() => voidMutation.mutate()}
-                  disabled={voidMutation.isPending}
-              >
-                <Trash2 className="h-4 w-4" /> Void Sale
-              </Button>
+            <div className="flex flex-col gap-3">
+              {transaction.amountPaid < transaction.total && (
+                <Button 
+                    variant="outline" 
+                    className="h-12 text-primary border-primary/30 hover:bg-primary/10 gap-2 uppercase text-[10px] font-black tracking-widest"
+                    onClick={() => setShowPayment(true)}
+                >
+                  <Wallet className="h-4 w-4" /> Record Payment
+                </Button>
+              )}
+              <div className="grid grid-cols-2 gap-3">
+                <Button 
+                    variant="outline" 
+                    className="h-10 text-amber-500 border-amber-500/30 hover:bg-amber-500/10 gap-2 text-[10px] font-black uppercase tracking-widest"
+                    onClick={() => refundMutation.mutate()}
+                    disabled={refundMutation.isPending}
+                >
+                  <RotateCcw className="h-4 w-4" /> Issue Refund
+                </Button>
+                <Button 
+                    variant="outline" 
+                    className="h-10 text-red-500 border-red-500/30 hover:bg-red-500/10 gap-2 text-[10px] font-black uppercase tracking-widest"
+                    onClick={() => voidMutation.mutate()}
+                    disabled={voidMutation.isPending}
+                >
+                  <Trash2 className="h-4 w-4" /> Void Sale
+                </Button>
+              </div>
             </div>
           )}
 
@@ -151,7 +185,7 @@ export function ReceiptModal({ isOpen, onClose, transaction }: ReceiptModalProps
         {/* The Actual Receipt Content (Styled for PDF) */}
         <div 
           ref={receiptRef}
-          className="bg-white text-black p-10 font-sans w-[480px] mx-auto selection:bg-indigo-100 relative"
+          className="bg-white text-black p-6 font-sans w-[480px] mx-auto selection:bg-indigo-100 relative"
         >
           {/* Reversal Watermark */}
           {transaction.type !== 'SALE' && (
@@ -165,10 +199,10 @@ export function ReceiptModal({ isOpen, onClose, transaction }: ReceiptModalProps
           )}
 
           {/* Header */}
-          <div className="border-b-4 border-indigo-600 pb-6 mb-8 flex justify-between items-start">
+          <div className="border-b-4 border-indigo-600 pb-4 mb-6 flex justify-between items-start">
             <div>
-              <h1 className="text-3xl font-black uppercase text-indigo-700 leading-tight tracking-tighter">Lord of Elijah</h1>
-              <div className="flex items-center gap-2 mt-2">
+              <h1 className="text-2xl font-bold uppercase text-indigo-700 leading-tight tracking-tighter">Lord of Elijah</h1>
+              <div className="flex items-center gap-2 mt-1">
                 <span className="h-1 w-1 rounded-full bg-gray-300" />
                 <p className="text-[10px] text-gray-500 font-bold tracking-widest uppercase">Premium Management System</p>
               </div>
@@ -182,21 +216,21 @@ export function ReceiptModal({ isOpen, onClose, transaction }: ReceiptModalProps
           </div>
 
           {/* Date and Customer */}
-          <div className="flex justify-between mb-8 text-sm">
-            <div className="space-y-4">
+          <div className="flex justify-between mb-6 text-sm">
+            <div className="space-y-3">
               <div>
-                <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">Transaction Date</p>
+                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-0.5">Transaction Date</p>
                 <p className="font-bold text-gray-800">{new Date(transaction.createdAt || transaction.timestamp).toLocaleString()}</p>
               </div>
               <div>
-                <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">Processed By</p>
+                <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-0.5">Processed By</p>
                 <p className="font-bold text-gray-800">{transaction.processedBy?.email || 'System'}</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">Billed To</p>
-              <p className="text-xl font-black text-indigo-900">{transaction.customerName || 'Guest Customer'}</p>
-              <p className="text-[10px] text-gray-400 mt-1">Status: <span className={`font-bold uppercase ${
+              <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-0.5">Billed To</p>
+              <p className="text-lg font-bold text-indigo-900">{transaction.customerName || 'Guest Customer'}</p>
+              <p className="text-[10px] text-gray-400 mt-0.5">Status: <span className={`font-bold uppercase ${
                 transaction.type === 'SALE' 
                   ? ((transaction.amountPaid ?? transaction.total) < transaction.total ? 'text-amber-600' : 'text-green-600')
                   : (transaction.type === 'REFUND' ? 'text-amber-600' : 'text-red-600')
@@ -209,26 +243,26 @@ export function ReceiptModal({ isOpen, onClose, transaction }: ReceiptModalProps
           </div>
 
           {/* Table */}
-          <div className="mb-8">
+          <div className="mb-6">
             <table className="w-full text-left">
               <thead>
-                <tr className="border-b-2 border-gray-900 text-[10px] font-black uppercase text-gray-900 tracking-widest">
-                  <th className="py-4 px-2">Description</th>
-                  <th className="py-4 px-2 text-center">Qty</th>
-                  <th className="py-4 px-2 text-right">Price</th>
-                  <th className="py-4 px-2 text-right">Amount</th>
+                <tr className="border-b-2 border-gray-900 text-[10px] font-bold uppercase text-gray-900 tracking-widest">
+                  <th className="py-2.5 px-2">Description</th>
+                  <th className="py-2.5 px-2 text-center">Qty</th>
+                  <th className="py-2.5 px-2 text-right">Price</th>
+                  <th className="py-2.5 px-2 text-right">Amount</th>
                 </tr>
               </thead>
               <tbody className="text-xs">
                 {transaction.items?.map((item: any, i: number) => (
                   <tr key={i} className="border-b border-gray-100 group">
-                    <td className="py-4 px-2">
-                       <p className="font-bold text-gray-800">{item.productName}</p>
-                       <p className="text-[10px] text-gray-400 mt-0.5">Product ID: {item.productId?.slice(-6).toUpperCase()}</p>
+                    <td className="py-2.5 px-2">
+                       <p className="font-semibold text-gray-800">{item.productName}</p>
+                       <p className="text-[9px] text-gray-400 mt-0.5">Item ID: {item.productId?.slice(-6).toUpperCase()}</p>
                     </td>
-                    <td className="py-4 px-2 text-center text-gray-600 font-medium">{item.qty}</td>
-                    <td className="py-4 px-2 text-right text-gray-600">₦{item.priceAtTime.toLocaleString()}</td>
-                    <td className="py-4 px-2 text-right font-black text-gray-900 bg-gray-50/50">₦{(item.qty * item.priceAtTime).toLocaleString()}</td>
+                    <td className="py-2.5 px-2 text-center text-gray-600 font-medium">{item.qty}</td>
+                    <td className="py-2.5 px-2 text-right text-gray-600">₦{item.priceAtTime.toLocaleString()}</td>
+                    <td className="py-2.5 px-2 text-right font-bold text-gray-900 bg-gray-50/50">₦{(item.qty * item.priceAtTime).toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
@@ -236,11 +270,11 @@ export function ReceiptModal({ isOpen, onClose, transaction }: ReceiptModalProps
           </div>
 
           {/* Summary Section */}
-          <div className="flex justify-between items-start pt-6 border-t border-gray-100">
+          <div className="flex justify-between items-start pt-4 border-t border-gray-100">
              <div className="max-w-[200px]">
                 <p className="text-[9px] leading-relaxed text-gray-400 font-medium">This document confirms the status of your transaction. For any queries, please visit the authorized unit.</p>
              </div>
-              <div className="space-y-3 w-full max-w-[200px]">
+              <div className="space-y-2 w-full max-w-[200px]">
                 <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase">
                     <span>Subtotal</span>
                     <span>₦{(transaction.total || transaction.totalAmount).toLocaleString()}</span>
@@ -248,35 +282,31 @@ export function ReceiptModal({ isOpen, onClose, transaction }: ReceiptModalProps
                 {transaction.type === 'SALE' && (
                   <>
                     <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase">
-                        <span>Amount Paid</span>
+                        <span>Paid</span>
                         <span>₦{(transaction.amountPaid ?? (transaction.total || transaction.totalAmount)).toLocaleString()}</span>
                     </div>
                     {((transaction.total || transaction.totalAmount) - (transaction.amountPaid ?? (transaction.total || transaction.totalAmount))) > 0 && (
                       <div className="flex justify-between text-[10px] font-bold text-red-500 uppercase">
-                          <span>Balance Due</span>
+                          <span>Balance</span>
                           <span>₦{((transaction.total || transaction.totalAmount) - (transaction.amountPaid ?? (transaction.total || transaction.totalAmount))).toLocaleString()}</span>
                       </div>
                     )}
                   </>
                 )}
-                <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase">
-                    <span>Tax (0%)</span>
-                    <span>₦0.00</span>
-                </div>
-                <div className={`flex justify-between items-center p-3 rounded-sm shadow-lg ${
-                  transaction.type === 'SALE' ? 'bg-indigo-900 shadow-indigo-900/20' :
-                  transaction.type === 'REFUND' ? 'bg-amber-700 shadow-amber-900/20' : 'bg-red-700 shadow-red-900/20'
+                <div className={`flex justify-between items-center p-2 rounded-sm ${
+                  transaction.type === 'SALE' ? 'bg-indigo-900' :
+                  transaction.type === 'REFUND' ? 'bg-amber-700' : 'bg-red-700'
                 } text-white`}>
-                    <span className="text-[10px] font-black uppercase tracking-widest">{transaction.type === 'SALE' ? 'Grand Total' : 'Reversal Amt'}</span>
-                    <span className="text-xl font-black">₦{(transaction.total || transaction.totalAmount).toLocaleString()}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest">{transaction.type === 'SALE' ? 'Total' : 'Reversal'}</span>
+                    <span className="text-lg font-bold">₦{(transaction.total || transaction.totalAmount).toLocaleString()}</span>
                 </div>
              </div>
           </div>
 
           {/* Footer Card */}
-          <div className="mt-12 pt-8 border-t border-dashed border-gray-200 text-center">
-             <div className="inline-block bg-gray-50 px-6 py-2 rounded-full border border-gray-100 mb-4">
-                <p className="text-[10px] text-gray-500 font-black tracking-widest uppercase italic">Authorized {transaction.type} Receipt</p>
+          <div className="mt-8 pt-4 border-t border-dashed border-gray-200 text-center">
+             <div className="inline-block bg-gray-50 px-4 py-1.5 rounded-full border border-gray-100 mb-2">
+                <p className="text-[10px] text-gray-500 font-bold tracking-widest uppercase italic">Authorized {transaction.type} Receipt</p>
              </div>
              <p className="text-[8px] text-gray-300 tracking-tighter leading-relaxed">
                 © 2026 Lord of Elijah Transaction Management. This is a computer-generated document and requires no physical signature for validation.
@@ -284,6 +314,11 @@ export function ReceiptModal({ isOpen, onClose, transaction }: ReceiptModalProps
           </div>
         </div>
       </div>
+      <PaymentModal 
+        isOpen={showPayment} 
+        onClose={() => setShowPayment(false)} 
+        transaction={transaction} 
+      />
     </Modal>
   );
 }

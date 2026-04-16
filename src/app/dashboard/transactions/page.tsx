@@ -6,16 +6,23 @@ import { fetchApi } from '../../../services/api';
 import { authService } from '../../../services/auth';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/Table';
 import { Button } from '../../../components/ui/Button';
-import { Download, Loader2 } from 'lucide-react';
+import { Download, Loader2, Filter, Wallet } from 'lucide-react';
 import { ReceiptModal } from '../../../components/POS/ReceiptModal';
 import { useIntersectionObserver } from '../../../hooks/useIntersectionObserver';
+import { useSearchParams } from 'next/navigation';
+import { PaymentModal } from '../../../components/Transactions/PaymentModal';
 
 import { LoadingScreen } from '../../../components/ui/LoadingScreen';
 
 export default function TransactionsPage() {
+  const searchParams = useSearchParams();
+  const initialStatus = searchParams.get('paymentStatus') || '';
+
   const [showReceipt, setShowReceipt] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
   const [selectedTx, setSelectedTx] = useState<any>(null);
   const [unitFilter, setUnitFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>(initialStatus);
 
   const user = authService.getCurrentUser();
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
@@ -33,9 +40,9 @@ export default function TransactionsPage() {
     isFetchingNextPage,
     isLoading
   } = useInfiniteQuery({
-    queryKey: ['transactions', unitFilter],
+    queryKey: ['transactions', unitFilter, statusFilter],
     queryFn: ({ pageParam = 1 }) => 
-      fetchApi<any[]>(`${isSuperAdmin ? '/transactions/all' : '/transactions'}?page=${pageParam}&limit=50${unitFilter ? `&unitId=${unitFilter}` : ''}`),
+      fetchApi<any[]>(`${isSuperAdmin ? '/transactions/all' : '/transactions'}?page=${pageParam}&limit=50${unitFilter ? `&unitId=${unitFilter}` : ''}${statusFilter ? `&paymentStatus=${statusFilter}` : ''}`),
     getNextPageParam: (lastPage, allPages) => {
       return lastPage.length === 50 ? allPages.length + 1 : undefined;
     },
@@ -57,6 +64,11 @@ export default function TransactionsPage() {
     setShowReceipt(true);
   };
 
+  const handleShowPayment = (tx: any) => {
+    setSelectedTx(tx);
+    setShowPayment(true);
+  };
+
   if (isLoading) return <LoadingScreen message="Retrieving Master Logs..." />;
 
   return (
@@ -67,35 +79,51 @@ export default function TransactionsPage() {
           <p className="text-gray-400 mt-1">Review operations and sales records.</p>
         </div>
 
-        {isSuperAdmin && (
+        <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2 bg-white/5 border border-white/10 p-1.5 rounded-xl">
-            <span className="text-[10px] font-black uppercase text-gray-500 ml-2">Filter by Unit:</span>
-            <select
-              value={unitFilter}
-              onChange={(e) => setUnitFilter(e.target.value)}
-              className="bg-transparent text-sm font-semibold outline-none text-primary cursor-pointer pr-4"
-            >
-              <option value="" className="bg-[#18181b] text-gray-400">All Units</option>
-              {units?.map((u: any) => (
-                <option key={u._id} value={u._id} className="bg-[#18181b] text-white">
-                  {u.name}
-                </option>
-              ))}
-            </select>
+              <span className="text-[10px] font-black uppercase text-gray-500 ml-2">Payment Status:</span>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="bg-transparent text-sm font-semibold outline-none text-primary cursor-pointer pr-4"
+              >
+                <option value="" className="bg-[#18181b] text-gray-400 text-xs">All Statuses</option>
+                <option value="PAID" className="bg-[#18181b] text-white text-xs">Paid in Full</option>
+                <option value="PARTIAL" className="bg-[#18181b] text-white text-xs">Partial Payment</option>
+                <option value="UNPAID" className="bg-[#18181b] text-white text-xs">Unpaid</option>
+              </select>
           </div>
-        )}
+
+          {isSuperAdmin && (
+            <div className="flex items-center gap-2 bg-white/5 border border-white/10 p-1.5 rounded-xl">
+              <span className="text-[10px] font-black uppercase text-gray-500 ml-2">Unit:</span>
+              <select
+                value={unitFilter}
+                onChange={(e) => setUnitFilter(e.target.value)}
+                className="bg-transparent text-sm font-semibold outline-none text-primary cursor-pointer pr-4"
+              >
+                <option value="" className="bg-[#18181b] text-gray-400">All Units</option>
+                {units?.map((u: any) => (
+                  <option key={u._id} value={u._id} className="bg-[#18181b] text-white">
+                    {u.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
       </div>
 
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Type</TableHead>
-            <TableHead>Amount</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead>Grand Total</TableHead>
+            <TableHead>Amt Paid</TableHead>
+            <TableHead>Payment Status</TableHead>
             <TableHead>Date</TableHead>
-            <TableHead>Details</TableHead>
             {isSuperAdmin && <TableHead>Unit</TableHead>}
-            <TableHead>Receipt</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -106,18 +134,21 @@ export default function TransactionsPage() {
               onClick={() => handleShowReceipt(tx)}
             >
               <TableCell className="font-medium capitalize">{tx.type}</TableCell>
-              <TableCell>₦{tx.totalAmount?.toLocaleString() || tx.total?.toLocaleString()}</TableCell>
+              <TableCell className="font-bold">₦{tx.total?.toLocaleString()}</TableCell>
+              <TableCell className="text-gray-400">₦{tx.amountPaid?.toLocaleString()}</TableCell>
               <TableCell>
-                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                  tx.type === 'SALE' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
-                  tx.type === 'REFUND' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                  'bg-red-500/10 text-red-400 border border-red-500/20'
+                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${
+                  tx.type !== 'SALE' ? 'bg-gray-500/10 text-gray-400 border-gray-500/20' :
+                  tx.amountPaid >= tx.total ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                  tx.amountPaid > 0 ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                  'bg-red-500/10 text-red-400 border-red-500/20'
                 }`}>
-                  {tx.type === 'SALE' ? 'Completed' : tx.type === 'REFUND' ? 'Refunded' : 'Voided'}
+                  {tx.type !== 'SALE' ? tx.type :
+                   tx.amountPaid >= tx.total ? 'Paid' : 
+                   tx.amountPaid > 0 ? 'Partial' : 'Unpaid'}
                 </span>
               </TableCell>
-              <TableCell>{new Date(tx.createdAt || tx.timestamp).toLocaleString()}</TableCell>
-              <TableCell className="text-gray-400 text-xs">{tx.items?.length || 0} items</TableCell>
+              <TableCell className="text-xs text-gray-500">{new Date(tx.createdAt || tx.timestamp).toLocaleString()}</TableCell>
               {isSuperAdmin && (
                 <TableCell>
                   <div className="flex items-center gap-2">
@@ -126,18 +157,33 @@ export default function TransactionsPage() {
                   </div>
                 </TableCell>
               )}
-              <TableCell>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleShowReceipt(tx);
-                  }} 
-                  className="hover:bg-primary/10 hover:text-primary transition-all"
-                >
-                  <Download className="w-4 h-4 mr-2" /> Download
-                </Button>
+              <TableCell className="text-right">
+                <div className="flex items-center justify-end gap-2">
+                    {tx.type === 'SALE' && tx.amountPaid < tx.total && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleShowPayment(tx);
+                            }}
+                            className="h-8 text-[10px] font-black uppercase border-primary/20 hover:bg-primary/10 text-primary gap-2"
+                        >
+                            <Wallet className="h-3 w-3" /> Clear Balance
+                        </Button>
+                    )}
+                    <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleShowReceipt(tx);
+                        }} 
+                        className="h-8 text-gray-500 hover:text-white transition-all"
+                    >
+                        <Download className="w-4 h-4" />
+                    </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}
@@ -165,6 +211,14 @@ export default function TransactionsPage() {
         onClose={() => setShowReceipt(false)}
         transaction={selectedTx}
       />
+
+      {selectedTx && (
+        <PaymentModal
+            isOpen={showPayment}
+            onClose={() => setShowPayment(false)}
+            transaction={selectedTx}
+        />
+      )}
     </div>
   );
 }
