@@ -176,8 +176,8 @@ export function ReceiptModal({ isOpen, onClose, transaction }: ReceiptModalProps
         </h3>
         <p className="text-gray-400 text-sm">
           {transaction.type === 'SALE' ? 'Receipt is ready for your records' :
-           transaction.type === 'REFUND' ? 'Inventory has been adjusted accordingly' :
-           'Transaction has been nullified and stock restored'}
+           transaction.type === 'REFUND' ? 'Refund has been processed successfully' :
+           'Transaction has been nullified'}
         </p>
       </div>
 

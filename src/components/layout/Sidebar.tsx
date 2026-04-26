@@ -30,6 +30,7 @@ export function Sidebar({ user, onClose, className }: SidebarProps) {
           ] 
         : []),
     { label: 'Products', href: '/dashboard/products', icon: Package },
+    { label: 'Clients', href: '/dashboard/clients', icon: Users },
     { label: 'Transactions', href: '/dashboard/transactions', icon: FileText },
     ...(user?.role === 'UNIT_MANAGER' 
         ? [{ label: 'POS Terminal', href: '/pos', icon: ShoppingCart }] 

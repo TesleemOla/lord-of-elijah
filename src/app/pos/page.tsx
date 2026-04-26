@@ -7,22 +7,28 @@ import { Header } from '../../components/layout/Header';
 import { authService } from '../../services/auth';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { Plus, Minus, ShoppingCart, ArrowLeft, Search, Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { Plus, Minus, ShoppingCart, ArrowLeft, Search, Loader2, ShoppingBag, Wallet } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useIntersectionObserver } from '../../hooks/useIntersectionObserver';
 import { clsx } from 'clsx';
 
 import { toast } from 'sonner';
 import { ReceiptModal } from '../../components/POS/ReceiptModal';
 import { LoadingScreen } from '../../components/ui/LoadingScreen';
+import { clientsService, Client } from '../../services/clients';
 
 export default function POSPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const user = authService.getCurrentUser();
-  const [cart, setCart] = useState<{product: any, qty: number, overridePrice?: number}[]>([]);
+  const [cart, setCart] = useState<{ product: any, qty: number, overridePrice?: number }[]>([]);
   const [customerName, setCustomerName] = useState('');
+  const [selectedClientId, setSelectedClientId] = useState<string>(searchParams.get('clientId') || '');
+  const [clients, setClients] = useState<Client[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [clientSearchTerm, setClientSearchTerm] = useState('');
+  const [showClientResults, setShowClientResults] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
   const [lastTransaction, setLastTransaction] = useState<any>(null);
   const [amountPaid, setAmountPaid] = useState<number | string>('');
@@ -36,7 +42,7 @@ export default function POSPage() {
     isLoading: productsLoading
   } = useInfiniteQuery({
     queryKey: ['products', 'pos', searchTerm],
-    queryFn: ({ pageParam = 1 }) => 
+    queryFn: ({ pageParam = 1 }) =>
       fetchApi<any[]>(`/products?page=${pageParam}&limit=20&search=${searchTerm}`),
     getNextPageParam: (lastPage, allPages) => {
       return lastPage.length === 20 ? allPages.length + 1 : undefined;
@@ -56,17 +62,32 @@ export default function POSPage() {
     }
   }, [isIntersecting, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+  useEffect(() => {
+    clientsService.getAll().then(setClients).catch(console.error);
+  }, []);
+
+  // Pre-fill customer name when a client is selected
+  useEffect(() => {
+    if (selectedClientId && clients.length > 0) {
+      const client = clients.find(c => c._id === selectedClientId);
+      if (client) {
+        setCustomerName(client.name);
+      }
+    }
+  }, [selectedClientId, clients]);
+
   const createSale = useMutation({
     mutationFn: () => fetchApi<any>('/transactions/sale', {
       method: 'POST',
-      body: JSON.stringify({ 
-        items: cart.map(i => ({ 
-          productId: i.product._id, 
+      body: JSON.stringify({
+        items: cart.map(i => ({
+          productId: i.product._id,
           qty: i.qty,
           overridePrice: i.overridePrice
         })),
-        customerName: customerName || 'Guest',
-        amountPaid: amountPaid === '' ? total : Number(amountPaid)
+        customerName: customerName || (selectedClientId ? clients.find(c => c._id === selectedClientId)?.name : 'Guest'),
+        amountPaid: amountPaid === '' ? total : Number(amountPaid),
+        clientId: selectedClientId || undefined
       }),
     }),
     onSuccess: (data) => {
@@ -97,17 +118,17 @@ export default function POSPage() {
     }
   };
 
+  const filteredClients = clients.filter(c =>
+    c.name.toLowerCase().includes(clientSearchTerm.toLowerCase()) ||
+    c.clientId.toLowerCase().includes(clientSearchTerm.toLowerCase()) ||
+    c.phone?.includes(clientSearchTerm)
+  );
+
   if (productsLoading && !searchTerm) return <LoadingScreen message="Opening Digital Register..." />;
 
   const addToCart = (product: any) => {
     setCart(prev => {
       const existing = prev.find(i => i.product._id === product._id);
-      const currentQty = existing ? existing.qty : 0;
-      
-      if (currentQty >= (product.stock || 0)) {
-        toast.error(`Cannot add more: only ${product.stock} units in stock.`);
-        return prev;
-      }
 
       if (existing) {
         return prev.map(i => i.product._id === product._id ? { ...i, qty: i.qty + 1 } : i);
@@ -126,6 +147,16 @@ export default function POSPage() {
     });
   };
 
+  const updateQty = (productId: string, qty: string) => {
+    const newQty = qty === '' ? 0 : parseInt(qty);
+    setCart(prev => {
+      if (newQty <= 0 && qty !== '') {
+        return prev.filter(i => i.product._id !== productId);
+      }
+      return prev.map(i => i.product._id === productId ? { ...i, qty: newQty } : i);
+    });
+  };
+
   const updatePrice = (productId: string, price: string) => {
     const newPrice = price === '' ? undefined : parseFloat(price);
     setCart(prev => prev.map(i => i.product._id === productId ? { ...i, overridePrice: newPrice } : i));
@@ -135,25 +166,25 @@ export default function POSPage() {
     <div className="min-h-screen flex flex-col bg-background relative overflow-hidden">
       {/* Cool POS background glow */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-background to-background pointer-events-none" />
-      
+
       <Header user={user} />
-      
-      <main className="flex-1 p-6 relative z-10 flex gap-6">
-        {/* Products Grid */}
+
+      <main className="flex-1 p-6 relative z-10 flex gap-6 overflow-hidden h-[calc(100vh-4rem)]">
+        {/* Column 1: Products Grid (Catalog) */}
         <div className="flex-1 flex flex-col min-h-0">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
               <Button variant="ghost" onClick={() => router.push('/dashboard')}>
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back
               </Button>
-              <h1 className="text-2xl font-bold tracking-tight">Terminal</h1>
+              <h1 className="text-2xl font-bold tracking-tight">Catalog</h1>
             </div>
-            
+
             <div className="relative w-72">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-              <Input
+              <input
                 placeholder="Search products..."
-                className="pl-10 h-10 bg-black/40 border-white/10 focus:border-primary/50"
+                className="w-full pl-10 h-10 bg-black/40 border border-white/10 rounded-lg text-sm focus:border-primary/50 outline-none transition-colors"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -163,28 +194,13 @@ export default function POSPage() {
           <div className="flex-1 overflow-y-auto pb-6 pr-2 custom-scrollbar">
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {products.map(product => {
-                const isOutOfStock = (product.stock || 0) <= 0;
-                const isLowStock = (product.stock || 0) < 10;
-                
+
                 return (
-                  <div 
-                    key={product._id} 
-                    onClick={() => !isOutOfStock && addToCart(product)}
-                    className={clsx(
-                      "glass-panel p-4 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all group flex flex-col justify-between relative overflow-hidden",
-                      isOutOfStock && "opacity-60 grayscale cursor-not-allowed border-red-500/30"
-                    )}
+                  <div
+                    key={product._id}
+                    onClick={() => addToCart(product)}
+                    className="glass-panel p-4 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all group flex flex-col justify-between relative overflow-hidden"
                   >
-                    {isOutOfStock && (
-                      <div className="absolute top-0 right-0 bg-red-600 text-white text-[8px] font-bold px-2 py-0.5 rounded-bl-lg uppercase tracking-wider z-10">
-                        Out of Stock
-                      </div>
-                    )}
-                    {isLowStock && !isOutOfStock && (
-                      <div className="absolute top-0 right-0 bg-amber-500 text-black text-[8px] font-bold px-2 py-0.5 rounded-bl-lg uppercase tracking-wider z-10">
-                        Low Stock
-                      </div>
-                    )}
 
                     <div>
                       <div className="h-10 w-10 bg-[#27272a] rounded-lg mb-3 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -194,12 +210,6 @@ export default function POSPage() {
                     </div>
                     <div className="mt-3">
                       <p className="text-primary font-bold">₦{(product.price || 0).toLocaleString()}</p>
-                      <p className={clsx(
-                        "text-[10px] font-bold uppercase tracking-wider mt-1",
-                        isOutOfStock ? "text-red-500" : isLowStock ? "text-amber-500" : "text-gray-500"
-                      )}>
-                        {product.stock || 0} in stock
-                      </p>
                     </div>
                   </div>
                 );
@@ -219,112 +229,209 @@ export default function POSPage() {
                 <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest">End of Catalog</p>
               ) : !productsLoading && (
                 <div className="text-center py-12">
-                   <p className="text-gray-500 italic">No products found matching "{searchTerm}"</p>
+                  <p className="text-gray-500 italic">No products found matching "{searchTerm}"</p>
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* Cart */}
-        <div className="w-96 glass-panel flex flex-col h-[calc(100vh-6rem)]">
-          <div className="p-4 border-b border-[var(--border)] bg-black/20">
+        {/* Column 2: Current Order (Cart) */}
+        <div className="w-96 glass-panel flex flex-col min-h-0 border-x border-white/5">
+          <div className="p-4 border-b border-white/10 bg-black/20">
             <h2 className="text-lg font-semibold flex items-center gap-2">
-              <ShoppingCart className="h-5 w-5" /> Current Order
+              <ShoppingBag className="h-5 w-5 text-primary" /> Current Order
             </h2>
           </div>
-          
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
             {cart.map(item => (
-              <div key={item.product._id} className="flex flex-col bg-[#27272a]/50 p-3 rounded-xl border border-[var(--border)] gap-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="font-medium text-sm">{item.product.name}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-gray-400 text-xs">Price:</span>
+              <div key={item.product._id} className="flex flex-col bg-[#27272a]/40 p-3 rounded-xl border border-white/5 gap-2">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 pr-2">
+                    <p className="font-medium text-[13px] leading-tight mb-1">{item.product.name}</p>
+                    <div className="flex items-center gap-1.5">
                       <input
                         type="number"
                         step="0.01"
                         value={item.overridePrice ?? item.product.price}
                         onChange={(e) => updatePrice(item.product._id, e.target.value)}
-                        className="w-20 bg-black/30 border border-[#3f3f46] rounded px-1 text-xs text-primary outline-none focus:border-primary/50"
+                        className="w-16 bg-black/40 border border-white/10 rounded px-1.5 py-0.5 text-[11px] text-primary outline-none focus:border-primary/50"
                       />
-                      {item.overridePrice !== undefined && item.overridePrice !== item.product.price && (
-                        <span className="text-[10px] text-orange-400 font-medium bg-orange-400/10 px-1 rounded">Special Order</span>
-                      )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => removeFromCart(item.product._id)}>
-                      <Minus className="h-3 w-3" />
-                    </Button>
-                    <span className="w-4 text-center text-sm">{item.qty}</span>
-                    <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => addToCart(item.product)}>
-                      <Plus className="h-3 w-3" />
-                    </Button>
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="flex items-center gap-2 bg-black/20 p-1 rounded-lg">
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeFromCart(item.product._id)}>
+                        <Minus className="h-3 w-3" />
+                      </Button>
+                      <input
+                        type="number"
+                        value={item.qty === 0 ? '' : item.qty}
+                        onChange={(e) => updateQty(item.product._id, e.target.value)}
+                        className="w-8 bg-transparent text-xs font-bold text-center outline-none border-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => addToCart(item.product)}>
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <span className="text-[10px] font-bold text-primary">
+                      ₦{((item.overridePrice ?? item.product.price) * item.qty).toLocaleString()}
+                    </span>
                   </div>
-                </div>
-                <div className="flex justify-between items-center pt-1 border-t border-[var(--border)] border-dashed">
-                  <span className="text-xs text-gray-500">Subtotal</span>
-                  <span className="text-sm font-semibold">₦{((item.overridePrice ?? item.product.price) * item.qty).toFixed(2)}</span>
                 </div>
               </div>
             ))}
             {cart.length === 0 && (
-              <div className="h-full flex flex-col items-center justify-center text-gray-500">
-                <ShoppingCart className="h-12 w-12 mb-4 opacity-20" />
-                <p>Order is empty</p>
+              <div className="h-full flex flex-col items-center justify-center text-gray-500 opacity-40">
+                <ShoppingCart className="h-12 w-12 mb-4" />
+                <p className="text-sm font-medium">Order is empty</p>
               </div>
             )}
           </div>
 
-          <div className="p-4 border-t border-[var(--border)] bg-black/40">
-            <div className="space-y-3 mb-4">
-              <div>
-                <p className="text-[10px] font-bold uppercase text-gray-500 mb-1 pl-1">Customer Name</p>
-                <input 
-                  type="text" 
-                  placeholder="Optional"
-                  value={customerName}
-                  onChange={e => setCustomerName(e.target.value)}
-                  className="w-full p-2.5 rounded-lg bg-black/30 border border-[#3f3f46] text-sm text-white outline-none focus:border-primary transition-colors"
+          <div className="p-4 border-t border-white/10 bg-black/40">
+            <div className="flex justify-between items-center">
+              <p className="text-xs font-bold uppercase text-gray-500">Total Amount</p>
+              <p className="text-xl font-black text-primary">₦{total.toLocaleString()}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Column 3: Settlement (Checkout) */}
+        <div className="w-64 glass-panel flex flex-col min-h-0 bg-primary/5">
+          <div className="p-4 border-b border-white/10 bg-black/20">
+            <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
+              <Wallet className="h-5 w-5" /> Settlement
+            </h2>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
+            {/* Linked Client */}
+            <div className="space-y-2">
+              <p className="text-[10px] font-bold uppercase text-gray-400 tracking-widest flex justify-between">
+                Linked Client
+                {selectedClientId && <span className="text-primary tracking-normal">Linked</span>}
+              </p>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search or select client..."
+                  value={clientSearchTerm}
+                  onChange={(e) => {
+                    setClientSearchTerm(e.target.value);
+                    setShowClientResults(true);
+                  }}
+                  onFocus={() => setShowClientResults(true)}
+                  className="w-full p-3 rounded-xl bg-black/40 border border-white/10 text-sm text-white outline-none focus:border-primary transition-all shadow-inner"
                 />
-              </div>
-              <div>
-                <div className="flex justify-between items-end mb-1 pl-1">
-                  <p className="text-[10px] font-bold uppercase text-primary">Amount Paid</p>
-                  {Number(amountPaid) < total && (
-                    <p className="text-[10px] font-bold uppercase text-red-500">Balance: ₦{(total - Number(amountPaid)).toLocaleString()}</p>
-                  )}
-                </div>
-                <input 
-                  type="number" 
-                  step="0.01"
-                  placeholder="0.00"
-                  value={amountPaid}
-                  onChange={e => handleAmountPaidChange(e.target.value)}
-                  className={clsx(
-                    "w-full p-2.5 rounded-lg bg-black/30 border text-sm font-bold outline-none transition-colors",
-                    Number(amountPaid) < total ? "border-amber-500/50 text-amber-500" : "border-[#3f3f46] text-primary focus:border-primary"
-                  )}
-                />
+                {selectedClientId && (
+                  <button
+                    onClick={() => {
+                      setSelectedClientId('');
+                      setCustomerName('');
+                      setClientSearchTerm('');
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-red-400 hover:text-red-300 font-bold uppercase bg-red-400/10 px-1.5 py-0.5 rounded"
+                  >
+                    Clear
+                  </button>
+                )}
+
+                {showClientResults && (
+                  <div className="absolute z-50 w-full mt-1 max-h-60 overflow-y-auto glass-panel border-primary/30 shadow-2xl bg-[#1c1c1f]">
+                    <div
+                      className="p-3 hover:bg-primary/10 cursor-pointer text-sm border-b border-white/5 transition-colors"
+                      onClick={() => {
+                        setSelectedClientId('');
+                        setCustomerName('');
+                        setClientSearchTerm('');
+                        setShowClientResults(false);
+                      }}
+                    >
+                      <p className="font-medium">Guest / Walk-in</p>
+                      <p className="text-[10px] text-gray-500 uppercase">Default Option</p>
+                    </div>
+                    {filteredClients.map(client => (
+                      <div
+                        key={client._id}
+                        className="p-3 hover:bg-primary/10 cursor-pointer text-sm border-b border-white/5 transition-colors flex justify-between items-center"
+                        onClick={() => {
+                          setSelectedClientId(client._id);
+                          setCustomerName(client.name);
+                          setClientSearchTerm(client.name);
+                          setShowClientResults(false);
+                        }}
+                      >
+                        <div>
+                          <p className="font-medium text-white">{client.name}</p>
+                          <p className="text-[10px] text-gray-500 uppercase">{client.clientId}</p>
+                        </div>
+                        {client.phone && <span className="text-[10px] text-gray-400 bg-white/5 px-1.5 py-0.5 rounded">{client.phone}</span>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {showClientResults && <div className="fixed inset-0 z-40" onClick={() => setShowClientResults(false)} />}
               </div>
             </div>
-            <Button 
-              className="w-full h-14 text-lg" 
+
+            {/* Display Name */}
+            <div className="space-y-2">
+              <p className="text-[10px] font-bold uppercase text-gray-400 tracking-widest">Customer Name</p>
+              <input
+                type="text"
+                placeholder="Guest"
+                value={customerName}
+                onChange={e => setCustomerName(e.target.value)}
+                className="w-full p-3 rounded-xl bg-black/40 border border-white/10 text-sm text-white outline-none focus:border-primary transition-all"
+              />
+            </div>
+
+            {/* Amount Paid */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <p className="text-[10px] font-bold uppercase text-gray-400 tracking-widest">Amount Paid</p>
+                {Number(amountPaid) < total && (
+                  <p className="text-[10px] font-bold uppercase text-red-500 animate-pulse">Balance: ₦{(total - Number(amountPaid)).toLocaleString()}</p>
+                )}
+              </div>
+              <input
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                value={amountPaid}
+                onChange={e => handleAmountPaidChange(e.target.value)}
+                className={clsx(
+                  "w-full p-4 rounded-xl bg-black/40 border text-lg font-black outline-none transition-all shadow-inner",
+                  Number(amountPaid) < total ? "border-amber-500/50 text-amber-500" : "border-white/10 text-primary focus:border-primary"
+                )}
+              />
+            </div>
+          </div>
+
+          <div className="p-4 border-t border-white/10 bg-black/40">
+            <Button
+              className="w-full h-10 font-black"
               onClick={() => createSale.mutate()}
               disabled={cart.length === 0 || createSale.isPending}
             >
-              {createSale.isPending ? 'Processing...' : 'Charge'}
+              {createSale.isPending ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-5 w-5 animate-spin" /> Processing...
+                </div>
+              ) : (
+                'Process Charge'
+              )}
             </Button>
           </div>
         </div>
       </main>
 
-      <ReceiptModal 
-        isOpen={showReceipt} 
-        onClose={() => setShowReceipt(false)} 
-        transaction={lastTransaction} 
+      <ReceiptModal
+        isOpen={showReceipt}
+        onClose={() => setShowReceipt(false)}
+        transaction={lastTransaction}
       />
     </div>
   );

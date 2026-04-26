@@ -15,7 +15,6 @@ import { toast } from 'sonner';
 
 import { Edit2, Trash2, Package, Loader2, Database } from 'lucide-react';
 import { LoadingScreen } from '../../../components/ui/LoadingScreen';
-import { StockIntakeModal } from '../../../components/Products/StockIntakeModal';
 
 export default function ProductsPage() {
   const queryClient = useQueryClient();
@@ -28,7 +27,6 @@ export default function ProductsPage() {
   const [formData, setFormData] = useState({
     name: '',
     price: '',
-    stock: '',
     sku: '',
     unitId: ''
   });
@@ -74,7 +72,6 @@ export default function ProductsPage() {
       body: JSON.stringify({
         ...data,
         price: parseFloat(data.price),
-        stock: parseInt(data.stock),
       }),
     }),
     onSuccess: () => {
@@ -92,7 +89,6 @@ export default function ProductsPage() {
       body: JSON.stringify({
         ...data,
         price: parseFloat(data.price),
-        stock: parseInt(data.stock),
       }),
     }),
     onSuccess: () => {
@@ -116,7 +112,7 @@ export default function ProductsPage() {
   });
 
   const resetForm = () => {
-    setFormData({ name: '', price: '', stock: '', sku: '', unitId: '' });
+    setFormData({ name: '', price: '', sku: '', unitId: '' });
     setEditingProduct(null);
   };
 
@@ -125,7 +121,6 @@ export default function ProductsPage() {
     setFormData({
       name: product.name,
       price: product.price.toString(),
-      stock: product.stock.toString(),
       sku: product.sku,
       unitId: product.unitId?._id || product.unitId
     });
@@ -152,9 +147,6 @@ export default function ProductsPage() {
           </p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" className="border-primary/50 text-primary hover:bg-primary/10" onClick={() => setIsIntakeModalOpen(true)}>
-            <Database className="mr-2 h-4 w-4" /> Stock Intake
-          </Button>
           <Button onClick={() => { resetForm(); setIsModalOpen(true); }}>
             <Plus className="mr-2 h-4 w-4" /> Add Product
           </Button>
@@ -166,7 +158,6 @@ export default function ProductsPage() {
           <TableRow>
             <TableHead>Product</TableHead>
             <TableHead>Price</TableHead>
-            <TableHead>Stock</TableHead>
             <TableHead>SKU</TableHead>
             {isSuperAdmin && <TableHead>Unit</TableHead>}
             <TableHead className="text-right">Actions</TableHead>
@@ -184,14 +175,6 @@ export default function ProductsPage() {
                 </div>
               </TableCell>
               <TableCell className="text-primary font-bold">₦{product.price.toLocaleString()}</TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <div className={`h-1.5 w-1.5 rounded-full ${product.stock <= 0 ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]' : product.stock < 10 ? 'bg-amber-500 animate-pulse' : 'bg-green-500'}`} />
-                  <span className={`${product.stock <= 0 ? 'text-red-500 font-bold' : product.stock < 10 ? 'text-amber-500 font-bold' : 'text-gray-400'}`}>
-                    {product.stock}
-                  </span>
-                </div>
-              </TableCell>
               <TableCell className="text-gray-500 text-xs">{product.sku}</TableCell>
               {isSuperAdmin && (
                 <TableCell className="text-gray-400 text-xs">
@@ -237,7 +220,7 @@ export default function ProductsPage() {
             <Button
               className="flex-1 h-12"
               onClick={handleSubmit}
-              disabled={createProduct.isPending || updateProduct.isPending || !formData.name || !formData.price || !formData.stock || !formData.sku || (isSuperAdmin && !formData.unitId)}
+              disabled={createProduct.isPending || updateProduct.isPending || !formData.name || !formData.price || !formData.sku || (isSuperAdmin && !formData.unitId)}
             >
               {(createProduct.isPending || updateProduct.isPending) ? 'Saving...' : (editingProduct ? 'Update Details' : 'Create Product')}
             </Button>
@@ -268,7 +251,7 @@ export default function ProductsPage() {
               placeholder="e.g. Premium Coffee Beans"
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <div>
               <label className="text-sm font-medium mb-1.5 block text-gray-300">Price (₦)</label>
               <Input
@@ -277,15 +260,6 @@ export default function ProductsPage() {
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                 placeholder="0.00"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-1.5 block text-gray-300">Current Stock</label>
-              <Input
-                type="number"
-                value={formData.stock}
-                onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                placeholder="0"
               />
             </div>
           </div>
@@ -300,7 +274,6 @@ export default function ProductsPage() {
         </div>
       </Modal>
 
-      <StockIntakeModal isOpen={isIntakeModalOpen} onClose={() => setIsIntakeModalOpen(false)} />
     </div>
   );
 }

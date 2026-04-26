@@ -38,16 +38,6 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       }
     });
 
-    newSocket.on('lowStockAlert', (data: { name: string; stock: number; sku: string }) => {
-      // Refresh UI data
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-
-      toast.error(`Low Stock Alert: ${data.name} (${data.sku}) is at ${data.stock} units!`, {
-        description: 'Please replenish stock as soon as possible.',
-        icon: <AlertTriangle className="h-4 w-4 text-red-500" />,
-        duration: 8000,
-      });
-    });
 
     newSocket.on('analyticsUpdate', () => {
       queryClient.invalidateQueries({ queryKey: ['analytics'] });
