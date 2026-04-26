@@ -164,8 +164,8 @@ export default function POSPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background relative overflow-hidden">
-      {/* Cool POS background glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-background to-background pointer-events-none" />
+      {/* Subtle Light background accent */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-blue-50/50 via-white to-indigo-50/50 pointer-events-none" />
 
       <Header user={user} />
 
@@ -184,7 +184,7 @@ export default function POSPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
               <input
                 placeholder="Search products..."
-                className="w-full pl-10 h-10 bg-black/40 border border-white/10 rounded-lg text-sm focus:border-primary/50 outline-none transition-colors"
+                className="w-full pl-10 h-10 bg-white border border-slate-200 rounded-lg text-sm focus:border-primary/50 outline-none transition-colors text-slate-900"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -203,10 +203,10 @@ export default function POSPage() {
                   >
 
                     <div>
-                      <div className="h-10 w-10 bg-[#27272a] rounded-lg mb-3 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <ShoppingCart className="h-5 w-5 text-gray-400 group-hover:text-primary" />
+                      <div className="h-10 w-10 bg-slate-100 rounded-lg mb-3 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <ShoppingCart className="h-5 w-5 text-slate-400 group-hover:text-primary" />
                       </div>
-                      <h3 className="font-semibold text-sm line-clamp-2 leading-tight">{product.name}</h3>
+                      <h3 className="font-semibold text-sm line-clamp-2 leading-tight text-slate-800">{product.name}</h3>
                     </div>
                     <div className="mt-3">
                       <p className="text-primary font-bold">₦{(product.price || 0).toLocaleString()}</p>
@@ -229,7 +229,7 @@ export default function POSPage() {
                 <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest">End of Catalog</p>
               ) : !productsLoading && (
                 <div className="text-center py-12">
-                  <p className="text-gray-500 italic">No products found matching "{searchTerm}"</p>
+                  <p className="text-slate-400 italic">No products found matching "{searchTerm}"</p>
                 </div>
               )}
             </div>
@@ -237,8 +237,8 @@ export default function POSPage() {
         </div>
 
         {/* Column 2: Current Order (Cart) */}
-        <div className="w-96 glass-panel flex flex-col min-h-0 border-x border-white/5">
-          <div className="p-4 border-b border-white/10 bg-black/20">
+        <div className="w-96 glass-panel flex flex-col min-h-0 border-x border-slate-200 shadow-none rounded-none border-y-0">
+          <div className="p-4 border-b border-slate-100 bg-slate-50/50">
             <h2 className="text-lg font-semibold flex items-center gap-2">
               <ShoppingBag className="h-5 w-5 text-primary" /> Current Order
             </h2>
@@ -246,22 +246,22 @@ export default function POSPage() {
 
           <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
             {cart.map(item => (
-              <div key={item.product._id} className="flex flex-col bg-[#27272a]/40 p-3 rounded-xl border border-white/5 gap-2">
+              <div key={item.product._id} className="flex flex-col bg-white p-3 rounded-xl border border-slate-100 gap-2 shadow-sm">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 pr-2">
-                    <p className="font-medium text-[13px] leading-tight mb-1">{item.product.name}</p>
+                    <p className="font-semibold text-[13px] leading-tight mb-1 text-slate-900">{item.product.name}</p>
                     <div className="flex items-center gap-1.5">
                       <input
                         type="number"
                         step="0.01"
                         value={item.overridePrice ?? item.product.price}
                         onChange={(e) => updatePrice(item.product._id, e.target.value)}
-                        className="w-16 bg-black/40 border border-white/10 rounded px-1.5 py-0.5 text-[11px] text-primary outline-none focus:border-primary/50"
+                        className="w-16 bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5 text-[11px] text-primary font-bold outline-none focus:border-primary/50"
                       />
                     </div>
                   </div>
                   <div className="flex flex-col items-center gap-1">
-                    <div className="flex items-center gap-2 bg-black/20 p-1 rounded-lg">
+                    <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
                       <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeFromCart(item.product._id)}>
                         <Minus className="h-3 w-3" />
                       </Button>
@@ -269,7 +269,7 @@ export default function POSPage() {
                         type="number"
                         value={item.qty === 0 ? '' : item.qty}
                         onChange={(e) => updateQty(item.product._id, e.target.value)}
-                        className="w-8 bg-transparent text-xs font-bold text-center outline-none border-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        className="w-8 bg-transparent text-xs font-bold text-center outline-none border-none focus:ring-0 text-slate-900 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                       <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => addToCart(item.product)}>
                         <Plus className="h-3 w-3" />
@@ -283,24 +283,24 @@ export default function POSPage() {
               </div>
             ))}
             {cart.length === 0 && (
-              <div className="h-full flex flex-col items-center justify-center text-gray-500 opacity-40">
-                <ShoppingCart className="h-12 w-12 mb-4" />
+              <div className="h-full flex flex-col items-center justify-center text-slate-300">
+                <ShoppingCart className="h-12 w-12 mb-4 opacity-20" />
                 <p className="text-sm font-medium">Order is empty</p>
               </div>
             )}
           </div>
 
-          <div className="p-4 border-t border-white/10 bg-black/40">
+          <div className="p-4 border-t border-slate-100 bg-slate-50">
             <div className="flex justify-between items-center">
-              <p className="text-xs font-bold uppercase text-gray-500">Total Amount</p>
+              <p className="text-xs font-bold uppercase text-slate-400">Total Amount</p>
               <p className="text-xl font-black text-primary">₦{total.toLocaleString()}</p>
             </div>
           </div>
         </div>
 
         {/* Column 3: Settlement (Checkout) */}
-        <div className="w-64 glass-panel flex flex-col min-h-0 bg-primary/5">
-          <div className="p-4 border-b border-white/10 bg-black/20">
+        <div className="w-64 glass-panel flex flex-col min-h-0 bg-slate-50/30 border-none rounded-none">
+          <div className="p-4 border-b border-slate-100 bg-white">
             <h2 className="text-lg font-semibold flex items-center gap-2 text-primary">
               <Wallet className="h-5 w-5" /> Settlement
             </h2>
@@ -309,9 +309,9 @@ export default function POSPage() {
           <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
             {/* Linked Client */}
             <div className="space-y-2">
-              <p className="text-[10px] font-bold uppercase text-gray-400 tracking-widest flex justify-between">
+              <p className="text-[10px] font-bold uppercase text-slate-400 tracking-widest flex justify-between">
                 Linked Client
-                {selectedClientId && <span className="text-primary tracking-normal">Linked</span>}
+                {selectedClientId && <span className="text-primary tracking-normal font-black">Linked</span>}
               </p>
               <div className="relative">
                 <input
@@ -323,7 +323,7 @@ export default function POSPage() {
                     setShowClientResults(true);
                   }}
                   onFocus={() => setShowClientResults(true)}
-                  className="w-full p-3 rounded-xl bg-black/40 border border-white/10 text-sm text-white outline-none focus:border-primary transition-all shadow-inner"
+                  className="w-full p-3 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 outline-none focus:border-primary transition-all shadow-sm"
                 />
                 {selectedClientId && (
                   <button
@@ -339,9 +339,9 @@ export default function POSPage() {
                 )}
 
                 {showClientResults && (
-                  <div className="absolute z-50 w-full mt-1 max-h-60 overflow-y-auto glass-panel border-primary/30 shadow-2xl bg-[#1c1c1f]">
+                  <div className="absolute z-50 w-full mt-1 max-h-60 overflow-y-auto glass-panel border-slate-200 shadow-2xl bg-white">
                     <div
-                      className="p-3 hover:bg-primary/10 cursor-pointer text-sm border-b border-white/5 transition-colors"
+                      className="p-3 hover:bg-slate-50 cursor-pointer text-sm border-b border-slate-100 transition-colors"
                       onClick={() => {
                         setSelectedClientId('');
                         setCustomerName('');
@@ -349,13 +349,13 @@ export default function POSPage() {
                         setShowClientResults(false);
                       }}
                     >
-                      <p className="font-medium">Guest / Walk-in</p>
-                      <p className="text-[10px] text-gray-500 uppercase">Default Option</p>
+                      <p className="font-medium text-slate-900">Guest / Walk-in</p>
+                      <p className="text-[10px] text-slate-400 uppercase">Default Option</p>
                     </div>
                     {filteredClients.map(client => (
                       <div
                         key={client._id}
-                        className="p-3 hover:bg-primary/10 cursor-pointer text-sm border-b border-white/5 transition-colors flex justify-between items-center"
+                        className="p-3 hover:bg-slate-50 cursor-pointer text-sm border-b border-slate-100 transition-colors flex justify-between items-center"
                         onClick={() => {
                           setSelectedClientId(client._id);
                           setCustomerName(client.name);
@@ -364,10 +364,10 @@ export default function POSPage() {
                         }}
                       >
                         <div>
-                          <p className="font-medium text-white">{client.name}</p>
-                          <p className="text-[10px] text-gray-500 uppercase">{client.clientId}</p>
+                          <p className="font-bold text-slate-900">{client.name}</p>
+                          <p className="text-[10px] text-slate-400 uppercase font-black">{client.clientId}</p>
                         </div>
-                        {client.phone && <span className="text-[10px] text-gray-400 bg-white/5 px-1.5 py-0.5 rounded">{client.phone}</span>}
+                        {client.phone && <span className="text-[10px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded font-medium">{client.phone}</span>}
                       </div>
                     ))}
                   </div>
@@ -378,22 +378,22 @@ export default function POSPage() {
 
             {/* Display Name */}
             <div className="space-y-2">
-              <p className="text-[10px] font-bold uppercase text-gray-400 tracking-widest">Customer Name</p>
+              <p className="text-[10px] font-bold uppercase text-slate-400 tracking-widest">Customer Name</p>
               <input
                 type="text"
                 placeholder="Guest"
                 value={customerName}
                 onChange={e => setCustomerName(e.target.value)}
-                className="w-full p-3 rounded-xl bg-black/40 border border-white/10 text-sm text-white outline-none focus:border-primary transition-all"
+                className="w-full p-3 rounded-xl bg-white border border-slate-200 text-sm text-slate-900 outline-none focus:border-primary transition-all"
               />
             </div>
 
             {/* Amount Paid */}
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <p className="text-[10px] font-bold uppercase text-gray-400 tracking-widest">Amount Paid</p>
+                <p className="text-[10px] font-bold uppercase text-slate-400 tracking-widest">Amount Paid</p>
                 {Number(amountPaid) < total && (
-                  <p className="text-[10px] font-bold uppercase text-red-500 animate-pulse">Balance: ₦{(total - Number(amountPaid)).toLocaleString()}</p>
+                  <p className="text-[10px] font-bold uppercase text-red-500">Balance: ₦{(total - Number(amountPaid)).toLocaleString()}</p>
                 )}
               </div>
               <input
@@ -403,14 +403,14 @@ export default function POSPage() {
                 value={amountPaid}
                 onChange={e => handleAmountPaidChange(e.target.value)}
                 className={clsx(
-                  "w-full p-4 rounded-xl bg-black/40 border text-lg font-black outline-none transition-all shadow-inner",
-                  Number(amountPaid) < total ? "border-amber-500/50 text-amber-500" : "border-white/10 text-primary focus:border-primary"
+                  "w-full p-4 rounded-xl bg-white border text-lg font-black outline-none transition-all shadow-sm",
+                  Number(amountPaid) < total ? "border-amber-400 text-amber-600" : "border-slate-200 text-primary focus:border-primary"
                 )}
               />
             </div>
           </div>
 
-          <div className="p-4 border-t border-white/10 bg-black/40">
+          <div className="p-4 border-t border-slate-100 bg-white">
             <Button
               className="w-full h-10 font-black"
               onClick={() => createSale.mutate()}

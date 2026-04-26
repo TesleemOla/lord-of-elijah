@@ -81,7 +81,7 @@ export default function DashboardPage() {
     <div className="space-y-8 animate-in fade-in duration-700 pb-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-3">
             {focusedUnitId ? focusedUnit?.unitName : 'Dashboard Overview'}
             {focusedUnitId && (
               <button
@@ -92,21 +92,21 @@ export default function DashboardPage() {
               </button>
             )}
           </h1>
-          <p className="text-gray-400 mt-1">
+          <p className="text-slate-500 mt-1">
             {isSuperAdmin
               ? (focusedUnitId ? `Detailed performance for ${focusedUnit?.unitName}` : 'Real-time multi-tenant analytics')
               : 'Performance metrics for your unit'}
           </p>
         </div>
 
-        <div className="flex bg-[#18181b] p-1 rounded-xl border border-[#27272a]">
+        <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
           {(['week', 'month', 'year'] as const).map((p) => (
             <button
               key={p}
               onClick={() => setPeriod(p)}
               className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all capitalize ${period === p
-                  ? 'bg-primary text-white shadow-lg'
-                  : 'text-gray-400 hover:text-white'
+                  ? 'bg-white text-primary shadow-sm'
+                  : 'text-slate-500 hover:text-slate-900'
                 }`}
             >
               {p}
@@ -117,24 +117,24 @@ export default function DashboardPage() {
 
       {isSuperAdmin && !focusedUnitId && (
         <div className="animate-in slide-in-from-top-4 duration-500">
-          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Unit Performance Breakdown</h3>
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Unit Performance Breakdown</h3>
           <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
             {unitPerformance?.map((unit: any) => (
               <div
                 key={unit.unitId}
                 onClick={() => setFocusedUnitId(unit.unitId)}
-                className="min-w-[240px] glass-panel p-5 bg-gradient-to-br from-white/5 to-transparent hover:border-primary/50 transition-all cursor-pointer group"
+                className="min-w-[240px] glass-panel p-5 bg-white hover:border-primary/50 transition-all cursor-pointer group"
               >
                 <div className="flex justify-between items-start mb-4">
                   <div className="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                     <Package className="h-5 w-5" />
                   </div>
-                  <ArrowUpRight className="h-4 w-4 text-gray-600 group-hover:text-primary" />
+                  <ArrowUpRight className="h-4 w-4 text-slate-300 group-hover:text-primary" />
                 </div>
-                <h4 className="font-bold text-white mb-1">{unit.unitName}</h4>
+                <h4 className="font-bold text-slate-800 mb-1">{unit.unitName}</h4>
                 <div className="flex justify-between items-end">
-                  <p className="text-xl font-black text-indigo-400">₦{unit.revenue.toLocaleString()}</p>
-                  <p className="text-[10px] text-gray-500 font-bold uppercase">{unit.count} Sales</p>
+                  <p className="text-xl font-black text-indigo-600">₦{unit.revenue.toLocaleString()}</p>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase">{unit.count} Sales</p>
                 </div>
               </div>
             ))}
@@ -153,36 +153,36 @@ export default function DashboardPage() {
                 router.push('/dashboard/transactions?paymentStatus=PARTIAL');
               }
             }}
-            className={`glass-panel p-6 flex flex-col justify-between transition-all cursor-pointer ${activeMetric === stat.id ? 'border-primary/50 bg-primary/5 ring-1 ring-primary/20 shadow-[0_0_20px_rgba(59,130,246,0.1)]' : 'hover:border-white/20'
+            className={`glass-panel p-6 flex flex-col justify-between transition-all cursor-pointer bg-white ${activeMetric === stat.id ? 'border-primary/50 bg-primary/5 ring-1 ring-primary/20 shadow-md shadow-primary/5' : 'hover:border-slate-200'
               }`}
           >
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-400 flex items-center gap-2 uppercase tracking-tighter">
+                <p className="text-[10px] font-bold text-slate-400 flex items-center gap-2 uppercase tracking-widest leading-none mb-2">
                   {stat.title}
                   {activeMetric === stat.id && <ArrowUpRight className="h-3 w-3 text-primary animate-pulse" />}
                 </p>
-                <h2 className="text-3xl font-bold mt-2 text-white">{stat.value}</h2>
+                <h2 className="text-3xl font-black text-slate-900">{stat.value}</h2>
               </div>
               <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${stat.bgColor}`}>
                 <stat.icon className={`h-6 w-6 ${stat.color}`} />
               </div>
             </div>
-            <p className="mt-4 text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-none truncate">{stat.label}</p>
+            <p className="mt-4 text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none truncate">{stat.label}</p>
           </div>
         ))}
       </div>
 
       <div className="animate-in slide-in-from-bottom-4 duration-500">
-        <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+        <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
           <PieChart className="h-4 w-4" />
           Payment Status Breakdown
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
-            { status: 'PAID', count: summary?.paidCount || 0, label: 'Paid in Full', color: 'text-green-400', border: 'border-green-500/20', bg: 'bg-green-500/5' },
-            { status: 'PARTIAL', count: summary?.partialCount || 0, label: 'Partial Payment', color: 'text-amber-400', border: 'border-amber-500/20', bg: 'bg-amber-500/5' },
-            { status: 'UNPAID', count: summary?.unpaidCount || 0, label: 'No Payment', color: 'text-red-400', border: 'border-red-500/20', bg: 'bg-red-500/5' }
+            { status: 'PAID', count: summary?.paidCount || 0, label: 'Paid in Full', color: 'text-green-600', border: 'border-green-100', bg: 'bg-green-50' },
+            { status: 'PARTIAL', count: summary?.partialCount || 0, label: 'Partial Payment', color: 'text-amber-600', border: 'border-amber-100', bg: 'bg-amber-50' },
+            { status: 'UNPAID', count: summary?.unpaidCount || 0, label: 'No Payment', color: 'text-red-600', border: 'border-red-100', bg: 'bg-red-50' }
           ].map((p) => (
             <div
               key={p.status}
@@ -190,10 +190,10 @@ export default function DashboardPage() {
               className={`glass-panel p-4 ${p.bg} ${p.border} hover:bg-white/5 transition-all cursor-pointer group flex items-center justify-between`}
             >
               <div>
-                <p className="text-[10px] font-black uppercase text-gray-500 tracking-widest mb-1 group-hover:text-gray-300 transition-colors">{p.label}</p>
+                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1 transition-colors">{p.label}</p>
                 <h4 className={`text-2xl font-black ${p.color}`}>{p.count}</h4>
               </div>
-              <ArrowUpRight className="h-5 w-5 text-gray-700 group-hover:text-primary transition-all" />
+              <ArrowUpRight className="h-5 w-5 text-slate-200 group-hover:text-primary transition-all" />
             </div>
           ))}
         </div>
@@ -202,8 +202,8 @@ export default function DashboardPage() {
       <div className="glass-panel p-6 lg:p-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h3 className="text-xl font-bold text-white capitalize">{activeMetric} Analysis</h3>
-            <p className="text-sm text-gray-400">
+            <h3 className="text-xl font-bold text-slate-900 capitalize">{activeMetric} Analysis</h3>
+            <p className="text-sm text-slate-500">
               {focusedUnitId
                 ? `Fluctuation patterns for ${focusedUnit?.unitName}`
                 : `Global visualization of ${activeMetric} over the selected ${period}`}
@@ -211,8 +211,8 @@ export default function DashboardPage() {
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-primary shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
-              <span className="text-xs text-gray-400">Trend Line</span>
+              <div className="h-3 w-3 rounded-full bg-primary shadow-lg shadow-primary/20" />
+              <span className="text-xs text-slate-500">Trend Line</span>
             </div>
           </div>
         </div>
@@ -231,10 +231,10 @@ export default function DashboardPage() {
                     <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                 <XAxis
                   dataKey="label"
-                  stroke="#71717a"
+                  stroke="#94a3b8"
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
@@ -248,7 +248,7 @@ export default function DashboardPage() {
                   }}
                 />
                 <YAxis
-                  stroke="#71717a"
+                  stroke="#94a3b8"
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
@@ -259,9 +259,9 @@ export default function DashboardPage() {
                   }
                 />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '12px' }}
-                  itemStyle={{ color: '#fff' }}
-                  labelStyle={{ color: '#71717a', marginBottom: '4px' }}
+                  contentStyle={{ backgroundColor: '#fff', border: '1px solid #f1f5f9', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                  itemStyle={{ color: '#0f172a', fontWeight: 'bold' }}
+                  labelStyle={{ color: '#94a3b8', marginBottom: '4px' }}
                   formatter={(val: any) => [
                     activeMetric === 'revenue' ? `₦${val.toLocaleString()}` : val,
                     activeMetric.charAt(0).toUpperCase() + activeMetric.slice(1)

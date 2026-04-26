@@ -75,36 +75,36 @@ export default function TransactionsPage() {
     <div className="space-y-6 animate-in fade-in pb-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Transactions History</h1>
-          <p className="text-gray-400 mt-1">Review operations and sales records.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Transactions History</h1>
+          <p className="text-slate-500 mt-1">Review operations and sales records.</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-2 bg-white/5 border border-white/10 p-1.5 rounded-xl">
+          <div className="flex items-center gap-2 bg-slate-100 border border-slate-200 p-1.5 rounded-xl">
               <span className="text-[10px] font-black uppercase text-gray-500 ml-2">Payment Status:</span>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="bg-transparent text-sm font-semibold outline-none text-primary cursor-pointer pr-4"
               >
-                <option value="" className="bg-[#18181b] text-gray-400 text-xs">All Statuses</option>
-                <option value="PAID" className="bg-[#18181b] text-white text-xs">Paid in Full</option>
-                <option value="PARTIAL" className="bg-[#18181b] text-white text-xs">Partial Payment</option>
-                <option value="UNPAID" className="bg-[#18181b] text-white text-xs">Unpaid</option>
+                <option value="" className="bg-white text-slate-400 text-xs">All Statuses</option>
+                <option value="PAID" className="bg-white text-slate-900 text-xs">Paid in Full</option>
+                <option value="PARTIAL" className="bg-white text-slate-900 text-xs">Partial Payment</option>
+                <option value="UNPAID" className="bg-white text-slate-900 text-xs">Unpaid</option>
               </select>
           </div>
 
           {isSuperAdmin && (
-            <div className="flex items-center gap-2 bg-white/5 border border-white/10 p-1.5 rounded-xl">
-              <span className="text-[10px] font-black uppercase text-gray-500 ml-2">Unit:</span>
+            <div className="flex items-center gap-2 bg-slate-100 border border-slate-200 p-1.5 rounded-xl">
+              <span className="text-[10px] font-black uppercase text-slate-500 ml-2">Unit:</span>
               <select
                 value={unitFilter}
                 onChange={(e) => setUnitFilter(e.target.value)}
                 className="bg-transparent text-sm font-semibold outline-none text-primary cursor-pointer pr-4"
               >
-                <option value="" className="bg-[#18181b] text-gray-400">All Units</option>
+                <option value="" className="bg-white text-slate-400">All Units</option>
                 {units?.map((u: any) => (
-                  <option key={u._id} value={u._id} className="bg-[#18181b] text-white">
+                  <option key={u._id} value={u._id} className="bg-white text-slate-900">
                     {u.name}
                   </option>
                 ))}
@@ -130,30 +130,30 @@ export default function TransactionsPage() {
           {transactions?.map((tx: any) => (
             <TableRow 
               key={tx._id} 
-              className="group cursor-pointer hover:bg-white/[0.02] transition-colors"
+              className="group cursor-pointer hover:bg-slate-50 transition-colors border-slate-100"
               onClick={() => handleShowReceipt(tx)}
             >
-              <TableCell className="font-medium capitalize">{tx.type}</TableCell>
-              <TableCell className="font-bold">₦{tx.total?.toLocaleString()}</TableCell>
-              <TableCell className="text-gray-400">₦{tx.amountPaid?.toLocaleString()}</TableCell>
+              <TableCell className="font-semibold text-slate-900 capitalize">{tx.type}</TableCell>
+              <TableCell className="font-black text-slate-900">₦{tx.total?.toLocaleString()}</TableCell>
+              <TableCell className="text-slate-500">₦{tx.amountPaid?.toLocaleString()}</TableCell>
               <TableCell>
                 <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${
-                  tx.type !== 'SALE' ? 'bg-gray-500/10 text-gray-400 border-gray-500/20' :
-                  tx.amountPaid >= tx.total ? 'bg-green-500/10 text-green-400 border-green-500/20' :
-                  tx.amountPaid > 0 ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                  'bg-red-500/10 text-red-400 border-red-500/20'
+                  tx.type !== 'SALE' ? 'bg-slate-100 text-slate-500 border-slate-200' :
+                  tx.amountPaid >= tx.total ? 'bg-green-100 text-green-700 border-green-200' :
+                  tx.amountPaid > 0 ? 'bg-amber-100 text-amber-700 border-amber-200' :
+                  'bg-red-100 text-red-700 border-red-200'
                 }`}>
                   {tx.type !== 'SALE' ? tx.type :
                    tx.amountPaid >= tx.total ? 'Paid' : 
                    tx.amountPaid > 0 ? 'Partial' : 'Unpaid'}
                 </span>
               </TableCell>
-              <TableCell className="text-xs text-gray-500">{new Date(tx.createdAt || tx.timestamp).toLocaleString()}</TableCell>
+              <TableCell className="text-xs text-slate-500 font-medium">{new Date(tx.createdAt || tx.timestamp).toLocaleString()}</TableCell>
               {isSuperAdmin && (
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-primary/40" />
-                    <span className="text-xs font-medium">{tx.unitId?.name || 'Unknown'}</span>
+                    <span className="text-xs font-semibold text-slate-700">{tx.unitId?.name || 'Unknown'}</span>
                   </div>
                 </TableCell>
               )}
@@ -179,7 +179,7 @@ export default function TransactionsPage() {
                             e.stopPropagation();
                             handleShowReceipt(tx);
                         }} 
-                        className="h-8 text-gray-500 hover:text-white transition-all"
+                        className="h-8 text-slate-400 hover:text-slate-900 transition-all"
                     >
                         <Download className="w-4 h-4" />
                     </Button>
@@ -200,7 +200,7 @@ export default function TransactionsPage() {
         ) : hasNextPage ? (
           <div className="h-1" />
         ) : transactions.length > 0 ? (
-          <div className="mt-4 text-[10px] text-gray-600 font-bold uppercase tracking-widest text-center">
+          <div className="mt-4 text-[10px] text-slate-400 font-bold uppercase tracking-widest text-center">
             Showing {transactions.length} record(s). End of history.
           </div>
         ) : null}

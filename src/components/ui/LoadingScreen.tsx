@@ -19,7 +19,7 @@ export function LoadingScreen({ message = "Synchronizing Data...", fullScreen = 
       </div>
 
       <div className="text-center space-y-2">
-        <h2 className="text-xl font-bold tracking-tight text-white">
+        <h2 className="text-xl font-black tracking-tight text-slate-900">
           Lord of Elijah <span className="text-primary">...</span>
         </h2>
         <div className="flex items-center justify-center gap-2">
@@ -32,7 +32,7 @@ export function LoadingScreen({ message = "Synchronizing Data...", fullScreen = 
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-xl">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/80 backdrop-blur-xl">
         {/* Background glow effects */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
         {content}

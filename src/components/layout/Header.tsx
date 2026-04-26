@@ -36,17 +36,17 @@ export function Header({ user }: HeaderProps) {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 md:hidden text-gray-400 hover:text-white transition-colors"
+            className="p-2 md:hidden text-slate-500 hover:text-primary transition-colors"
             title="Toggle Menu"
           >
             {isMobileMenuOpen ? <X className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
           </button>
           
           <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.5)]">
+            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
               <Activity className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold tracking-tight text-white hidden xs:block">TransactFlow</span>
+            <span className="text-xl font-bold tracking-tight text-slate-900 hidden xs:block">TransactFlow</span>
           </Link>
         </div>
 
@@ -54,10 +54,10 @@ export function Header({ user }: HeaderProps) {
           {mounted && user && (
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium text-white">{user.email}</p>
-                <p className="text-xs text-primary">{user.role}</p>
+                <p className="text-sm font-medium text-slate-900">{user.email}</p>
+                <p className="text-xs text-primary font-bold">{user.role}</p>
               </div>
-              <div className="h-9 w-9 rounded-full bg-[#27272a] border border-[var(--border)] flex items-center justify-center font-semibold text-sm">
+              <div className="h-9 w-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-semibold text-sm text-slate-700">
                 {user.email.charAt(0).toUpperCase()}
               </div>
             </div>
@@ -77,7 +77,7 @@ export function Header({ user }: HeaderProps) {
       {/* Mobile Drawer Content */}
       <div 
         className={clsx(
-          "fixed inset-y-0 left-0 w-72 bg-black border-r border-[#27272a] z-40 transform transition-transform duration-300 ease-out md:hidden",
+          "fixed inset-y-0 left-0 w-72 bg-white border-r border-slate-200 z-40 transform transition-transform duration-300 ease-out md:hidden",
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >

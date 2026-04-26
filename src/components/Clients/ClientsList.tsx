@@ -39,11 +39,10 @@ export function ClientsList() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white">Clients</h1>
-          <p className="text-gray-400">Manage your customer accounts and track their balances.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Clients</h1>
+          <p className="text-slate-500">Manage your customer accounts and track their balances.</p>
         </div>
         <Button
-          className="glass-panel hover:bg-primary/20 text-white border-primary/30"
           onClick={() => setIsModalOpen(true)}
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -52,11 +51,11 @@ export function ClientsList() {
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
         <input
           type="text"
           placeholder="Search clients by name, phone or email..."
-          className="w-full bg-[#1c1c1f] border border-[var(--border)] rounded-xl py-2 pl-10 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+          className="w-full bg-white border border-slate-200 rounded-xl py-2 pl-10 pr-4 text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all shadow-sm"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -84,14 +83,14 @@ export function ClientsList() {
             </TableRow>
           ) : (
             filteredClients.map((client) => (
-              <TableRow key={client._id}>
-                <TableCell className="font-medium text-white">
+              <TableRow key={client._id} className="border-slate-100">
+                <TableCell className="font-semibold text-slate-900">
                   {client.name}
                 </TableCell>
-                <TableCell className="text-gray-400">{client.phone || '-'}</TableCell>
-                <TableCell className="text-right text-white">{formatCurrency(client.totalPurchases || 0)}</TableCell>
-                <TableCell className="text-right text-green-400">{formatCurrency(client.totalPaid || 0)}</TableCell>
-                <TableCell className={`text-right font-bold ${(client.balance || 0) > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                <TableCell className="text-slate-500 font-medium">{client.phone || '-'}</TableCell>
+                <TableCell className="text-right text-slate-900 font-bold">{formatCurrency(client.totalPurchases || 0)}</TableCell>
+                <TableCell className="text-right text-green-600 font-bold">{formatCurrency(client.totalPaid || 0)}</TableCell>
+                <TableCell className={`text-right font-black ${(client.balance || 0) > 0 ? 'text-red-600' : 'text-green-600'}`}>
                   {formatCurrency(client.balance || 0)}
                 </TableCell>
                 <TableCell className="text-right">

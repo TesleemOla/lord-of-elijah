@@ -67,18 +67,18 @@ export function ClientStatement({ clientId }: ClientStatementProps) {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="flex items-center gap-4">
           <Link href="/dashboard/clients">
-            <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/10">
-              <ArrowLeft className="h-5 w-5" />
+            <Button variant="ghost" size="icon" className="rounded-full hover:bg-slate-100">
+              <ArrowLeft className="h-5 w-5 text-slate-500" />
             </Button>
           </Link>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-bold tracking-tight text-white">{client.name}</h1>
-              <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-xs font-mono border border-primary/20">
+              <h1 className="text-3xl font-bold tracking-tight text-slate-900">{client.name}</h1>
+              <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-xs font-black border border-primary/20 uppercase tracking-tighter">
                 {client.clientId}
               </span>
             </div>
-            <p className="text-gray-400">Profit & Loss / Statement of Account</p>
+            <p className="text-slate-500">Profit & Loss / Statement of Account</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -95,11 +95,11 @@ export function ClientStatement({ clientId }: ClientStatementProps) {
               New Sale
             </Button>
           </Link>
-          <Button variant="ghost" className="glass-panel hover:bg-white/10">
+          <Button variant="ghost" className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600">
             <Printer className="h-4 w-4 mr-2" />
             Print
           </Button>
-          <Button variant="ghost" className="glass-panel hover:bg-white/10">
+          <Button variant="ghost" className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600">
             <Download className="h-4 w-4 mr-2" />
             Export PDF
           </Button>
@@ -107,37 +107,37 @@ export function ClientStatement({ clientId }: ClientStatementProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="glass-panel p-6 space-y-2">
+        <div className="glass-panel p-6 space-y-2 bg-white">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">Total Purchases</p>
-            <TrendingUp className="h-4 w-4 text-red-400" />
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Total Purchases</p>
+            <TrendingUp className="h-4 w-4 text-red-500" />
           </div>
-          <p className="text-2xl font-bold text-white">{formatCurrency(summary.totalPurchases)}</p>
-          <p className="text-xs text-gray-500">Total volume of sales</p>
+          <p className="text-2xl font-black text-slate-900">{formatCurrency(summary.totalPurchases)}</p>
+          <p className="text-xs text-slate-500">Total volume of sales</p>
         </div>
-        <div className="glass-panel p-6 space-y-2">
+        <div className="glass-panel p-6 space-y-2 bg-white">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">Total Payments</p>
-            <TrendingDown className="h-4 w-4 text-green-400" />
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Total Payments</p>
+            <TrendingDown className="h-4 w-4 text-green-500" />
           </div>
-          <p className="text-2xl font-bold text-white">{formatCurrency(summary.totalPaid)}</p>
-          <p className="text-xs text-gray-500">Total cash received</p>
+          <p className="text-2xl font-black text-slate-900">{formatCurrency(summary.totalPaid)}</p>
+          <p className="text-xs text-slate-500">Total cash received</p>
         </div>
-        <div className="glass-panel p-6 space-y-2 border-l-4 border-l-primary">
+        <div className="glass-panel p-6 space-y-2 border-l-4 border-l-primary bg-white shadow-lg shadow-primary/5">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-400">Current Balance</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Current Balance</p>
             <Wallet className="h-4 w-4 text-primary" />
           </div>
-          <p className={`text-2xl font-bold ${summary.balance > 0 ? 'text-red-400' : 'text-green-400'}`}>
+          <p className={`text-2xl font-black ${summary.balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
             {formatCurrency(summary.balance)}
           </p>
-          <p className="text-xs text-gray-500">Outstanding amount</p>
+          <p className="text-xs text-slate-500">Outstanding amount</p>
         </div>
       </div>
 
       <div className="glass-panel overflow-hidden">
-        <div className="p-4 border-b border-[var(--border)] bg-white/5">
-          <h3 className="font-semibold text-white">Transaction History</h3>
+        <div className="p-4 border-b border-slate-100 bg-slate-50">
+          <h3 className="font-bold text-slate-900">Transaction History</h3>
         </div>
         <Table className="rounded-none border-0 shadow-none">
           <TableHeader>
@@ -152,25 +152,25 @@ export function ClientStatement({ clientId }: ClientStatementProps) {
           </TableHeader>
           <TableBody>
             {statement.map((row) => (
-              <TableRow key={row._id}>
-                <TableCell className="text-gray-300">{formatDate(row.date)}</TableCell>
-                <TableCell className="text-gray-400 max-w-xs truncate">{row.items || 'Manual Payment / Refund'}</TableCell>
+              <TableRow key={row._id} className="border-slate-100">
+                <TableCell className="text-slate-600 font-medium">{formatDate(row.date)}</TableCell>
+                <TableCell className="text-slate-500 max-w-xs truncate">{row.items || 'Manual Payment / Refund'}</TableCell>
                 <TableCell>
-                  <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${
-                    row.type === 'SALE' ? 'bg-blue-500/10 text-blue-400' : 
-                    row.type === 'VOID' ? 'bg-red-500/10 text-red-400' : 
-                    'bg-orange-500/10 text-orange-400'
+                  <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
+                    row.type === 'SALE' ? 'bg-blue-100 text-blue-700 border-blue-200' : 
+                    row.type === 'VOID' ? 'bg-red-100 text-red-700 border-red-200' : 
+                    'bg-amber-100 text-amber-700 border-amber-200'
                   }`}>
                     {row.type}
                   </span>
                 </TableCell>
-                <TableCell className="text-right text-white">
+                <TableCell className="text-right text-slate-900 font-bold">
                   {row.type === 'SALE' ? formatCurrency(row.total) : row.total < 0 ? formatCurrency(Math.abs(row.total)) : '-'}
                 </TableCell>
-                <TableCell className="text-right text-green-400">
+                <TableCell className="text-right text-green-600 font-bold">
                   {row.paid > 0 ? formatCurrency(row.paid) : '-'}
                 </TableCell>
-                <TableCell className={`text-right font-medium ${row.balance > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                <TableCell className={`text-right font-black ${row.balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
                   {formatCurrency(row.balance)}
                 </TableCell>
               </TableRow>
@@ -185,8 +185,8 @@ export function ClientStatement({ clientId }: ClientStatementProps) {
             <ShoppingBag className="h-10 w-10 text-primary/40" />
           </div>
           <div className="space-y-2 max-w-sm">
-            <h3 className="text-xl font-semibold text-white">No Transactions Yet</h3>
-            <p className="text-gray-400">
+            <h3 className="text-xl font-bold text-slate-900">No Transactions Yet</h3>
+            <p className="text-slate-500">
               This client hasn't made any purchases or payments. Start a new sale to record their first transaction.
             </p>
           </div>
@@ -216,21 +216,21 @@ export function ClientStatement({ clientId }: ClientStatementProps) {
         }
       >
         <div className="space-y-4">
-          <div className="p-4 bg-primary/5 border border-primary/10 rounded-xl">
-            <p className="text-sm text-gray-400">Current Balance</p>
-            <p className={`text-2xl font-bold ${summary.balance > 0 ? 'text-red-400' : 'text-green-400'}`}>
+          <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Current Balance</p>
+            <p className={`text-2xl font-black ${summary.balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
               {formatCurrency(summary.balance)}
             </p>
           </div>
           
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">Payment Amount (₦)</label>
+            <label className="text-xs font-bold uppercase tracking-widest text-slate-400">Payment Amount (₦)</label>
             <Input
               type="number"
               placeholder="0.00"
               value={paymentAmount}
               onChange={(e) => setPaymentAmount(e.target.value)}
-              className="bg-black/30 border-white/10 h-12 text-lg font-bold text-primary"
+              className="bg-white border-slate-200 h-12 text-lg font-black text-primary shadow-sm"
               autoFocus
             />
             <p className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">
