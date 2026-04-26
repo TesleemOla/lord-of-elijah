@@ -117,7 +117,7 @@ export default function DashboardPage() {
 
       {isSuperAdmin && !focusedUnitId && (
         <div className="animate-in slide-in-from-top-4 duration-500">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Unit Performance Breakdown</h3>
+          <h3 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-4">Unit Performance Breakdown</h3>
           <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
             {unitPerformance?.map((unit: any) => (
               <div
@@ -129,12 +129,12 @@ export default function DashboardPage() {
                   <div className="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                     <Package className="h-5 w-5" />
                   </div>
-                  <ArrowUpRight className="h-4 w-4 text-slate-300 group-hover:text-primary" />
+                  <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover:text-primary" />
                 </div>
                 <h4 className="font-bold text-slate-800 mb-1">{unit.unitName}</h4>
                 <div className="flex justify-between items-end">
                   <p className="text-xl font-black text-indigo-600">₦{unit.revenue.toLocaleString()}</p>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase">{unit.count} Sales</p>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase">{unit.count} Sales</p>
                 </div>
               </div>
             ))}
@@ -158,7 +158,7 @@ export default function DashboardPage() {
           >
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-[10px] font-bold text-slate-400 flex items-center gap-2 uppercase tracking-widest leading-none mb-2">
+                <p className="text-[10px] font-bold text-slate-500 flex items-center gap-2 uppercase tracking-widest leading-none mb-2">
                   {stat.title}
                   {activeMetric === stat.id && <ArrowUpRight className="h-3 w-3 text-primary animate-pulse" />}
                 </p>
@@ -168,13 +168,13 @@ export default function DashboardPage() {
                 <stat.icon className={`h-6 w-6 ${stat.color}`} />
               </div>
             </div>
-            <p className="mt-4 text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none truncate">{stat.label}</p>
+            <p className="mt-4 text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-none truncate">{stat.label}</p>
           </div>
         ))}
       </div>
 
       <div className="animate-in slide-in-from-bottom-4 duration-500">
-        <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+        <h3 className="text-xs font-black text-slate-600 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
           <PieChart className="h-4 w-4" />
           Payment Status Breakdown
         </h3>
@@ -190,10 +190,10 @@ export default function DashboardPage() {
               className={`glass-panel p-4 ${p.bg} ${p.border} hover:bg-white/5 transition-all cursor-pointer group flex items-center justify-between`}
             >
               <div>
-                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1 transition-colors">{p.label}</p>
+                <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-1 transition-colors">{p.label}</p>
                 <h4 className={`text-2xl font-black ${p.color}`}>{p.count}</h4>
               </div>
-              <ArrowUpRight className="h-5 w-5 text-slate-200 group-hover:text-primary transition-all" />
+              <ArrowUpRight className="h-5 w-5 text-slate-400 group-hover:text-primary transition-all" />
             </div>
           ))}
         </div>

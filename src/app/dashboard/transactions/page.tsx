@@ -87,7 +87,7 @@ export default function TransactionsPage() {
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="bg-transparent text-sm font-semibold outline-none text-primary cursor-pointer pr-4"
               >
-                <option value="" className="bg-white text-slate-400 text-xs">All Statuses</option>
+                <option value="" className="bg-white text-slate-500 text-xs">All Statuses</option>
                 <option value="PAID" className="bg-white text-slate-900 text-xs">Paid in Full</option>
                 <option value="PARTIAL" className="bg-white text-slate-900 text-xs">Partial Payment</option>
                 <option value="UNPAID" className="bg-white text-slate-900 text-xs">Unpaid</option>
@@ -102,7 +102,7 @@ export default function TransactionsPage() {
                 onChange={(e) => setUnitFilter(e.target.value)}
                 className="bg-transparent text-sm font-semibold outline-none text-primary cursor-pointer pr-4"
               >
-                <option value="" className="bg-white text-slate-400">All Units</option>
+                <option value="" className="bg-white text-slate-500">All Units</option>
                 {units?.map((u: any) => (
                   <option key={u._id} value={u._id} className="bg-white text-slate-900">
                     {u.name}
@@ -179,7 +179,7 @@ export default function TransactionsPage() {
                             e.stopPropagation();
                             handleShowReceipt(tx);
                         }} 
-                        className="h-8 text-slate-400 hover:text-slate-900 transition-all"
+                        className="h-8 text-slate-500 hover:text-slate-900 transition-all"
                     >
                         <Download className="w-4 h-4" />
                     </Button>
@@ -200,7 +200,7 @@ export default function TransactionsPage() {
         ) : hasNextPage ? (
           <div className="h-1" />
         ) : transactions.length > 0 ? (
-          <div className="mt-4 text-[10px] text-slate-400 font-bold uppercase tracking-widest text-center">
+          <div className="mt-4 text-[10px] text-slate-500 font-bold uppercase tracking-widest text-center">
             Showing {transactions.length} record(s). End of history.
           </div>
         ) : null}

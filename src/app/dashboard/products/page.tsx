@@ -177,16 +177,16 @@ export default function ProductsPage() {
               <TableCell className="text-primary font-bold">₦{product.price.toLocaleString()}</TableCell>
               <TableCell className="text-slate-500 text-xs">{product.sku}</TableCell>
               {isSuperAdmin && (
-                <TableCell className="text-slate-400 text-xs">
+                <TableCell className="text-slate-500 text-xs font-medium">
                   {product.unitId?.name || 'Unknown'}
                 </TableCell>
               )}
               <TableCell className="text-right">
-                <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-400 hover:bg-blue-400/10" onClick={() => handleEdit(product)}>
+                <div className="flex justify-end gap-2 transition-opacity">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:bg-blue-400/10" onClick={() => handleEdit(product)}>
                     <Edit2 className="h-3.5 w-3.5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-red-400 hover:bg-red-400/10" onClick={() => deleteProduct.mutate(product)}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-400/10" onClick={() => deleteProduct.mutate(product)}>
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>

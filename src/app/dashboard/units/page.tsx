@@ -66,7 +66,7 @@ export default function UnitsPage() {
             <TableRow key={unit._id} className="border-slate-100">
               <TableCell className="font-semibold text-slate-900">{unit.name}</TableCell>
               <TableCell className="text-slate-500">{unit.location}</TableCell>
-              <TableCell className="text-slate-400 text-xs">{new Date(unit.createdAt).toLocaleDateString()}</TableCell>
+              <TableCell className="text-slate-500 text-xs font-medium">{new Date(unit.createdAt).toLocaleDateString()}</TableCell>
             </TableRow>
           ))}
         </TableBody>

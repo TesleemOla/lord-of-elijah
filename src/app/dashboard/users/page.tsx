@@ -90,7 +90,7 @@ export default function UsersPage() {
                 <TableCell className="text-slate-500 text-xs font-medium">
                     {user.unitId ? (typeof user.unitId === 'string' ? user.unitId : user.unitId.name) : 'System Wide'}
                 </TableCell>
-                <TableCell className="text-slate-400 text-xs">{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell className="text-slate-500 text-xs font-medium">{new Date(user.createdAt).toLocaleDateString()}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -125,7 +125,7 @@ export default function UsersPage() {
                 onChange={(e) => setFormData({ ...formData, unitId: e.target.value })}
                 className="w-full flex h-12 rounded-xl bg-white border border-slate-200 px-4 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all outline-none"
               >
-                <option value="" className="text-slate-400">Select a unit...</option>
+                <option value="" className="text-slate-500 font-medium">Select a unit...</option>
                 {units?.map(unit => (
                     <option key={unit._id} value={unit._id} className="text-slate-900">{unit.name} ({unit.location})</option>
                 ))}

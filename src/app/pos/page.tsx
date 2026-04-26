@@ -204,7 +204,7 @@ export default function POSPage() {
 
                     <div>
                       <div className="h-10 w-10 bg-slate-100 rounded-lg mb-3 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <ShoppingCart className="h-5 w-5 text-slate-400 group-hover:text-primary" />
+                        <ShoppingCart className="h-5 w-5 text-slate-500 group-hover:text-primary" />
                       </div>
                       <h3 className="font-semibold text-sm line-clamp-2 leading-tight text-slate-800">{product.name}</h3>
                     </div>
@@ -229,7 +229,7 @@ export default function POSPage() {
                 <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest">End of Catalog</p>
               ) : !productsLoading && (
                 <div className="text-center py-12">
-                  <p className="text-slate-400 italic">No products found matching "{searchTerm}"</p>
+                  <p className="text-slate-500 italic font-medium">No products found matching "{searchTerm}"</p>
                 </div>
               )}
             </div>
@@ -292,7 +292,7 @@ export default function POSPage() {
 
           <div className="p-4 border-t border-slate-100 bg-slate-50">
             <div className="flex justify-between items-center">
-              <p className="text-xs font-bold uppercase text-slate-400">Total Amount</p>
+              <p className="text-xs font-bold uppercase text-slate-500">Total Amount</p>
               <p className="text-xl font-black text-primary">₦{total.toLocaleString()}</p>
             </div>
           </div>
@@ -309,7 +309,7 @@ export default function POSPage() {
           <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
             {/* Linked Client */}
             <div className="space-y-2">
-              <p className="text-[10px] font-bold uppercase text-slate-400 tracking-widest flex justify-between">
+              <p className="text-[10px] font-bold uppercase text-slate-500 tracking-widest flex justify-between">
                 Linked Client
                 {selectedClientId && <span className="text-primary tracking-normal font-black">Linked</span>}
               </p>
@@ -350,7 +350,7 @@ export default function POSPage() {
                       }}
                     >
                       <p className="font-medium text-slate-900">Guest / Walk-in</p>
-                      <p className="text-[10px] text-slate-400 uppercase">Default Option</p>
+                      <p className="text-[10px] text-slate-500 uppercase font-black">Default Option</p>
                     </div>
                     {filteredClients.map(client => (
                       <div
@@ -365,9 +365,9 @@ export default function POSPage() {
                       >
                         <div>
                           <p className="font-bold text-slate-900">{client.name}</p>
-                          <p className="text-[10px] text-slate-400 uppercase font-black">{client.clientId}</p>
+                          <p className="text-[10px] text-slate-500 uppercase font-black">{client.clientId}</p>
                         </div>
-                        {client.phone && <span className="text-[10px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded font-medium">{client.phone}</span>}
+                        {client.phone && <span className="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded font-bold">{client.phone}</span>}
                       </div>
                     ))}
                   </div>
@@ -378,7 +378,7 @@ export default function POSPage() {
 
             {/* Display Name */}
             <div className="space-y-2">
-              <p className="text-[10px] font-bold uppercase text-slate-400 tracking-widest">Customer Name</p>
+              <p className="text-[10px] font-bold uppercase text-slate-500 tracking-widest">Customer Name</p>
               <input
                 type="text"
                 placeholder="Guest"
@@ -391,7 +391,7 @@ export default function POSPage() {
             {/* Amount Paid */}
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <p className="text-[10px] font-bold uppercase text-slate-400 tracking-widest">Amount Paid</p>
+                <p className="text-[10px] font-bold uppercase text-slate-500 tracking-widest">Amount Paid</p>
                 {Number(amountPaid) < total && (
                   <p className="text-[10px] font-bold uppercase text-red-500">Balance: ₦{(total - Number(amountPaid)).toLocaleString()}</p>
                 )}

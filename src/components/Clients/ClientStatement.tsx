@@ -109,7 +109,7 @@ export function ClientStatement({ clientId }: ClientStatementProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="glass-panel p-6 space-y-2 bg-white">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Total Purchases</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Total Purchases</p>
             <TrendingUp className="h-4 w-4 text-red-500" />
           </div>
           <p className="text-2xl font-black text-slate-900">{formatCurrency(summary.totalPurchases)}</p>
@@ -117,7 +117,7 @@ export function ClientStatement({ clientId }: ClientStatementProps) {
         </div>
         <div className="glass-panel p-6 space-y-2 bg-white">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Total Payments</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Total Payments</p>
             <TrendingDown className="h-4 w-4 text-green-500" />
           </div>
           <p className="text-2xl font-black text-slate-900">{formatCurrency(summary.totalPaid)}</p>
@@ -125,7 +125,7 @@ export function ClientStatement({ clientId }: ClientStatementProps) {
         </div>
         <div className="glass-panel p-6 space-y-2 border-l-4 border-l-primary bg-white shadow-lg shadow-primary/5">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Current Balance</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Current Balance</p>
             <Wallet className="h-4 w-4 text-primary" />
           </div>
           <p className={`text-2xl font-black ${summary.balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
@@ -217,14 +217,14 @@ export function ClientStatement({ clientId }: ClientStatementProps) {
       >
         <div className="space-y-4">
           <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Current Balance</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Current Balance</p>
             <p className={`text-2xl font-black ${summary.balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
               {formatCurrency(summary.balance)}
             </p>
           </div>
           
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-widest text-slate-400">Payment Amount (₦)</label>
+            <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Payment Amount (₦)</label>
             <Input
               type="number"
               placeholder="0.00"

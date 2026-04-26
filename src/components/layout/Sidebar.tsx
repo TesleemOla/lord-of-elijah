@@ -43,7 +43,7 @@ export function Sidebar({ user, onClose, className }: SidebarProps) {
   return (
     <aside className={`w-64 glass-panel border-y-0 border-l-0 rounded-none h-full md:h-[calc(100vh-4rem)] flex flex-col justify-between ${className}`}>
       <div className="py-6 px-4 space-y-2 flex-grow">
-        <p className="px-4 text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">
+        <p className="px-4 text-xs font-black text-slate-500 uppercase tracking-widest mb-4">
           Navigation
         </p>
         {navItems.map((item) => {
