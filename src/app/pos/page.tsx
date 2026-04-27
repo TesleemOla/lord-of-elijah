@@ -177,11 +177,11 @@ function POSContent() {
               <Button variant="ghost" onClick={() => router.push('/dashboard')}>
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back
               </Button>
-              <h1 className="text-2xl font-bold tracking-tight">Catalog</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900">Catalog</h1>
             </div>
 
             <div className="relative w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-900" />
               <input
                 placeholder="Search products..."
                 className="w-full pl-10 h-10 bg-white border border-slate-200 rounded-lg text-sm focus:border-primary/50 outline-none transition-colors text-slate-900"
@@ -226,7 +226,7 @@ function POSContent() {
               ) : hasNextPage ? (
                 <div className="h-1" />
               ) : products.length > 0 ? (
-                <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest">End of Catalog</p>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">End of Catalog</p>
               ) : !productsLoading && (
                 <div className="text-center py-12">
                   <p className="text-slate-500 italic font-medium">No products found matching "{searchTerm}"</p>
@@ -239,7 +239,7 @@ function POSContent() {
         {/* Column 2: Current Order (Cart) */}
         <div className="w-96 glass-panel flex flex-col min-h-0 border-x border-slate-200 shadow-none rounded-none border-y-0">
           <div className="p-4 border-b border-slate-100 bg-slate-50/50">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
+            <h2 className="text-lg font-semibold flex items-center gap-2 text-slate-900">
               <ShoppingBag className="h-5 w-5 text-primary" /> Current Order
             </h2>
           </div>
@@ -283,9 +283,9 @@ function POSContent() {
               </div>
             ))}
             {cart.length === 0 && (
-              <div className="h-full flex flex-col items-center justify-center text-slate-300">
+              <div className="h-full flex flex-col items-center justify-center text-slate-800">
                 <ShoppingCart className="h-12 w-12 mb-4 opacity-20" />
-                <p className="text-sm font-medium">Order is empty</p>
+                <p className="text-sm font-medium text-slate-900">Order is empty</p>
               </div>
             )}
           </div>

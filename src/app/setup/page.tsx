@@ -80,7 +80,7 @@ export default function SetupPage() {
             <Rocket className="h-9 w-9 text-white" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-white mb-3">System Initialization</h1>
-          <p className="text-gray-400 max-w-md">
+          <p className="text-gray-900 max-w-md">
             Welcome to <span className="text-primary font-semibold">Lord of Elijah</span> Transaction Management.
             Create the inaugural Super Administrator account to begin.
           </p>

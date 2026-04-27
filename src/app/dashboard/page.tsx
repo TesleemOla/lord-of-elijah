@@ -105,8 +105,8 @@ export default function DashboardPage() {
               key={p}
               onClick={() => setPeriod(p)}
               className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all capitalize ${period === p
-                  ? 'bg-white text-primary shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900'
+                ? 'bg-white text-primary shadow-sm'
+                : 'text-slate-500 hover:text-slate-900'
                 }`}
             >
               {p}
@@ -129,7 +129,7 @@ export default function DashboardPage() {
                   <div className="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                     <Package className="h-5 w-5" />
                   </div>
-                  <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover:text-primary" />
+                  <ArrowUpRight className="h-4 w-4 text-slate-900 group-hover:text-primary" />
                 </div>
                 <h4 className="font-bold text-slate-800 mb-1">{unit.unitName}</h4>
                 <div className="flex justify-between items-end">
@@ -193,7 +193,7 @@ export default function DashboardPage() {
                 <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-1 transition-colors">{p.label}</p>
                 <h4 className={`text-2xl font-black ${p.color}`}>{p.count}</h4>
               </div>
-              <ArrowUpRight className="h-5 w-5 text-slate-400 group-hover:text-primary transition-all" />
+              <ArrowUpRight className="h-5 w-5 text-slate-900 group-hover:text-primary transition-all" />
             </div>
           ))}
         </div>

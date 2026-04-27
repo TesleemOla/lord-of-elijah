@@ -27,7 +27,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="h-screen flex flex-col overflow-hidden">
       <Header user={user} />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar user={user} className="hidden md:flex" />

@@ -24,7 +24,7 @@ export function LoadingScreen({ message = "Synchronizing Data...", fullScreen = 
         </h2>
         <div className="flex items-center justify-center gap-2">
           <div className="h-1 w-1 bg-primary rounded-full animate-ping" />
-          <p className="text-gray-400 text-sm font-medium tracking-wide uppercase">{message}</p>
+          <p className="text-slate-500 text-sm font-medium tracking-wide uppercase">{message}</p>
         </div>
       </div>
     </div>

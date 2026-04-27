@@ -32,7 +32,7 @@ export function Header({ user }: HeaderProps) {
 
   return (
     <>
-      <header className="h-16 border-b border-[var(--border)] glass-panel rounded-none flex items-center justify-between px-4 md:px-6 z-40 relative">
+      <header className="h-16 border-b border-[var(--border)] glass-panel rounded-none flex items-center justify-between px-4 md:px-6 z-50 sticky top-0">
         <div className="flex items-center gap-4">
           <button 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

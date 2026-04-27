@@ -52,8 +52,8 @@ export function ClientModal({ isOpen, onClose, onSuccess }: ClientModalProps) {
           <Button variant="ghost" onClick={onClose} disabled={loading}>
             Cancel
           </Button>
-          <Button 
-            onClick={handleSubmit} 
+          <Button
+            onClick={handleSubmit}
             disabled={loading}
             className="bg-primary hover:bg-primary/80 text-white min-w-[100px]"
           >
@@ -64,7 +64,7 @@ export function ClientModal({ isOpen, onClose, onSuccess }: ClientModalProps) {
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-400">Full Name</label>
+          <label className="text-sm font-medium text-gray-900">Full Name</label>
           <Input
             placeholder="e.g. John Doe"
             value={formData.name}
@@ -73,7 +73,7 @@ export function ClientModal({ isOpen, onClose, onSuccess }: ClientModalProps) {
           />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-400">Phone Number (Optional)</label>
+          <label className="text-sm font-medium text-gray-900">Phone Number (Optional)</label>
           <Input
             placeholder="e.g. +234..."
             value={formData.phone}

@@ -75,11 +75,11 @@ export function ClientsList() {
         <TableBody>
           {loading ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center py-10 text-gray-500">Loading clients...</TableCell>
+              <TableCell colSpan={6} className="text-center py-10 text-slate-500">Loading clients...</TableCell>
             </TableRow>
           ) : filteredClients.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center py-10 text-gray-500">No clients found.</TableCell>
+              <TableCell colSpan={6} className="text-center py-10 text-slate-500">No clients found.</TableCell>
             </TableRow>
           ) : (
             filteredClients.map((client) => (

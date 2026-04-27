@@ -55,8 +55,8 @@ export default function LoginPage() {
           <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.6)] mb-4">
             <Activity className="h-7 w-7 text-white" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">Welcome Back</h1>
-          <p className="text-gray-400 text-sm mt-2">Sign in to your TransactFlow account</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Welcome Back</h1>
+          <p className="text-slate-500 text-sm mt-2">Sign in to your TransactFlow account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -66,7 +66,7 @@ export default function LoginPage() {
              </div>
           )}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300 ml-1">Email</label>
+            <label className="text-sm font-medium text-slate-600 ml-1">Email</label>
             <Input 
               type="email" 
               placeholder="admin@system.com" 
@@ -76,7 +76,7 @@ export default function LoginPage() {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300 ml-1">Password</label>
+            <label className="text-sm font-medium text-slate-600 ml-1">Password</label>
             <PasswordInput 
               placeholder="••••••••" 
               value={password}

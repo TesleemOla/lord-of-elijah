@@ -57,7 +57,7 @@ export function ClientStatement({ clientId }: ClientStatementProps) {
     }
   }
 
-  if (loading) return <div className="text-center py-20 text-gray-400">Loading statement...</div>
+  if (loading) return <div className="text-center py-20 text-gray-900">Loading statement...</div>
   if (!data) return <div className="text-center py-20 text-red-400">Client statement not found.</div>
 
   const { client, statement, summary } = data
@@ -82,7 +82,7 @@ export function ClientStatement({ clientId }: ClientStatementProps) {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button 
+          <Button
             className="bg-green-600 hover:bg-green-500 text-white"
             onClick={() => setIsPaymentModalOpen(true)}
           >
@@ -156,11 +156,10 @@ export function ClientStatement({ clientId }: ClientStatementProps) {
                 <TableCell className="text-slate-600 font-medium">{formatDate(row.date)}</TableCell>
                 <TableCell className="text-slate-500 max-w-xs truncate">{row.items || 'Manual Payment / Refund'}</TableCell>
                 <TableCell>
-                  <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
-                    row.type === 'SALE' ? 'bg-blue-100 text-blue-700 border-blue-200' : 
-                    row.type === 'VOID' ? 'bg-red-100 text-red-700 border-red-200' : 
-                    'bg-amber-100 text-amber-700 border-amber-200'
-                  }`}>
+                  <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${row.type === 'SALE' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                      row.type === 'VOID' ? 'bg-red-100 text-red-700 border-red-200' :
+                        'bg-amber-100 text-amber-700 border-amber-200'
+                    }`}>
                     {row.type}
                   </span>
                 </TableCell>
@@ -205,8 +204,8 @@ export function ClientStatement({ clientId }: ClientStatementProps) {
         footer={
           <div className="flex justify-end gap-3">
             <Button variant="ghost" onClick={() => setIsPaymentModalOpen(false)}>Cancel</Button>
-            <Button 
-              className="bg-green-600 hover:bg-green-500" 
+            <Button
+              className="bg-green-600 hover:bg-green-500"
               onClick={handleRecordPayment}
               disabled={isSubmitting}
             >
@@ -222,7 +221,7 @@ export function ClientStatement({ clientId }: ClientStatementProps) {
               {formatCurrency(summary.balance)}
             </p>
           </div>
-          
+
           <div className="space-y-2">
             <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Payment Amount (₦)</label>
             <Input
