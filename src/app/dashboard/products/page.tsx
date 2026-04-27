@@ -22,8 +22,10 @@ export default function ProductsPage() {
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isIntakeModalOpen, setIsIntakeModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [productToDelete, setProductToDelete] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -116,6 +118,19 @@ export default function ProductsPage() {
     setEditingProduct(null);
   };
 
+  const handleDeleteClick = (product: any) => {
+    setProductToDelete(product);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (productToDelete) {
+      deleteProduct.mutate(productToDelete);
+      setIsDeleteModalOpen(false);
+      setProductToDelete(null);
+    }
+  };
+
   const handleEdit = (product: any) => {
     setEditingProduct(product);
     setFormData({
@@ -186,7 +201,7 @@ export default function ProductsPage() {
                   <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-400 hover:bg-blue-400/10" onClick={() => handleEdit(product)}>
                     <Edit2 className="h-3.5 w-3.5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-red-400 hover:bg-red-400/10" onClick={() => deleteProduct.mutate(product)}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-400/10" onClick={() => handleDeleteClick(product)}>
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
@@ -210,9 +225,9 @@ export default function ProductsPage() {
         ) : null}
       </div>
 
-      <Modal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
         title={editingProduct ? 'Edit Product' : 'Add New Product'}
         footer={
           <div className="flex gap-3">
@@ -271,6 +286,32 @@ export default function ProductsPage() {
               placeholder="e.g. CF-001"
             />
           </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Confirm Deletion"
+        footer={
+          <div className="flex gap-3">
+            <Button variant="outline" className="flex-1" onClick={() => setIsDeleteModalOpen(false)}>Cancel</Button>
+            <Button
+              variant="danger"
+              className="flex-1"
+              onClick={confirmDelete}
+              disabled={deleteProduct.isPending}
+            >
+              {deleteProduct.isPending ? 'Deleting...' : 'Delete Product'}
+            </Button>
+          </div>
+        }
+      >
+        <div className="py-4">
+          <p className="text-slate-600">
+            Are you sure you want to delete <span className="font-bold text-slate-900">{productToDelete?.name}</span>?
+            This action cannot be undone and will remove the product from the inventory permanently.
+          </p>
         </div>
       </Modal>
 
