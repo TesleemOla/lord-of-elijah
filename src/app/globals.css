@@ -3,28 +3,40 @@
 @tailwind utilities;
 
 :root {
-  --background: #000000;
-  --foreground: #fff;
-  --primary: #3b82f6;
-  --primary-hover: #2563eb;
-  --card: rgba(24, 24, 27, 0.7);
-  --border: rgba(63, 63, 70, 0.5);
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --card: rgba(255, 255, 255, 0.8);
+  --border: rgba(0, 0, 0, 0.08);
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   min-height: 100vh;
-  /* subtle deep gradient background */
-  background: radial-gradient(circle at top left, #121826 0%, #09090b 100%);
+  /* subtle light gradient background */
+  background: radial-gradient(circle at top left, #f8fafc 0%, #f1f5f9 100%);
   background-attachment: fixed;
 }
 
 @layer components {
-
-  /* Glassmorphism Panel styles */
+  /* Glassmorphism Panel styles for light mode */
   .glass-panel {
-    @apply bg-[var(--card)] backdrop-blur-lg border border-[var(--border)] shadow-xl rounded-2xl;
+    @apply bg-[var(--card)] backdrop-blur-md border border-[var(--border)] shadow-sm rounded-2xl;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-slate-200 rounded-full;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-300;
   }
 }

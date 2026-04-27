@@ -45,8 +45,8 @@ export default function UnitsPage() {
     <div className="space-y-6 animate-in fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Units Directory</h1>
-          <p className="text-gray-400 mt-1">Manage system units and stores.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Units Directory</h1>
+          <p className="text-slate-500 mt-1">Manage system units and stores.</p>
         </div>
         <Button onClick={() => setIsModalOpen(true)}>
           <Plus className="mr-2 h-4 w-4" /> Add Unit
@@ -63,10 +63,10 @@ export default function UnitsPage() {
         </TableHeader>
         <TableBody>
           {units?.map((unit: any) => (
-            <TableRow key={unit._id}>
-              <TableCell className="font-medium">{unit.name}</TableCell>
-              <TableCell>{unit.location}</TableCell>
-              <TableCell>{new Date(unit.createdAt).toLocaleDateString()}</TableCell>
+            <TableRow key={unit._id} className="border-slate-100">
+              <TableCell className="font-semibold text-slate-900">{unit.name}</TableCell>
+              <TableCell className="text-slate-500">{unit.location}</TableCell>
+              <TableCell className="text-slate-500 text-xs font-medium">{new Date(unit.createdAt).toLocaleDateString()}</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -75,7 +75,7 @@ export default function UnitsPage() {
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Create New Unit">
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium mb-1 block">Unit Name</label>
+            <label className="text-sm font-medium mb-1.5 block text-slate-600">Unit Name</label>
             <Input
               value={newUnitName}
               onChange={(e) => setNewUnitName(e.target.value)}

@@ -58,8 +58,8 @@ export default function UsersPage() {
     <div className="space-y-6 animate-in fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Manage Managers</h1>
-          <p className="text-gray-400 mt-1">Add and manage unit managers and their credentials.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Manage Managers</h1>
+          <p className="text-slate-500 mt-1">Add and manage unit managers and their credentials.</p>
         </div>
         <Button onClick={() => setIsModalOpen(true)}>
           <UserPlus className="mr-2 h-4 w-4" /> Add Manager
@@ -78,19 +78,19 @@ export default function UsersPage() {
           </TableHeader>
           <TableBody>
             {users?.map((user: any) => (
-              <TableRow key={user._id}>
-                <TableCell className="font-medium text-white">{user.email}</TableCell>
+              <TableRow key={user._id} className="border-slate-100">
+                <TableCell className="font-semibold text-slate-900">{user.email}</TableCell>
                 <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${
-                        user.role === 'SUPER_ADMIN' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-green-500/20 text-green-400'
+                    <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
+                        user.role === 'SUPER_ADMIN' ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-green-100 text-green-700 border-green-200'
                     }`}>
                         {user.role}
                     </span>
                 </TableCell>
-                <TableCell className="text-gray-400">
+                <TableCell className="text-slate-500 text-xs font-medium">
                     {user.unitId ? (typeof user.unitId === 'string' ? user.unitId : user.unitId.name) : 'System Wide'}
                 </TableCell>
-                <TableCell className="text-gray-400">{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell className="text-slate-500 text-xs font-medium">{new Date(user.createdAt).toLocaleDateString()}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -101,7 +101,7 @@ export default function UsersPage() {
         <div className="space-y-6 pt-4">
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium mb-1.5 block text-gray-300">Email Address</label>
+              <label className="text-sm font-medium mb-1.5 block text-slate-600">Email Address</label>
               <Input 
                 type="email"
                 value={formData.email}
@@ -110,7 +110,7 @@ export default function UsersPage() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1.5 block text-gray-300">Initial Password</label>
+              <label className="text-sm font-medium mb-1.5 block text-slate-600">Initial Password</label>
               <PasswordInput 
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -118,16 +118,16 @@ export default function UsersPage() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1.5 block text-gray-300">Assign Unit</label>
+              <label className="text-sm font-medium mb-1.5 block text-slate-600">Assign Unit</label>
               <select 
                 title="Assign Unit"
                 value={formData.unitId}
                 onChange={(e) => setFormData({ ...formData, unitId: e.target.value })}
-                className="w-full flex h-12 rounded-xl bg-black/40 border border-[#27272a] px-4 py-2 text-sm text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all outline-none"
+                className="w-full flex h-12 rounded-xl bg-white border border-slate-200 px-4 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all outline-none"
               >
-                <option value="">Select a unit...</option>
+                <option value="" className="text-slate-500 font-medium">Select a unit...</option>
                 {units?.map(unit => (
-                    <option key={unit._id} value={unit._id}>{unit.name} ({unit.location})</option>
+                    <option key={unit._id} value={unit._id} className="text-slate-900">{unit.name} ({unit.location})</option>
                 ))}
               </select>
             </div>

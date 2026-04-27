@@ -156,8 +156,8 @@ export default function ProductsPage() {
     <div className="space-y-6 animate-in fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Products Inventory</h1>
-          <p className="text-gray-400 mt-1">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Products Inventory</h1>
+          <p className="text-slate-500 mt-1">
             {isSuperAdmin ? 'All products across all units' : 'Products available in your unit'}
           </p>
         </div>
@@ -180,28 +180,28 @@ export default function ProductsPage() {
         </TableHeader>
         <TableBody>
           {products?.map((product: any) => (
-            <TableRow key={product._id} className="group">
-              <TableCell className="font-medium text-white">
+            <TableRow key={product._id} className="group border-slate-100">
+              <TableCell className="font-semibold text-slate-900">
                 <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 bg-white/5 rounded flex items-center justify-center">
-                    <Package className="h-4 w-4 text-gray-500" />
+                  <div className="h-8 w-8 bg-slate-100 rounded flex items-center justify-center">
+                    <Package className="h-4 w-4 text-slate-500" />
                   </div>
                   {product.name}
                 </div>
               </TableCell>
               <TableCell className="text-primary font-bold">₦{product.price.toLocaleString()}</TableCell>
-              <TableCell className="text-gray-500 text-xs">{product.sku}</TableCell>
+              <TableCell className="text-slate-500 text-xs">{product.sku}</TableCell>
               {isSuperAdmin && (
-                <TableCell className="text-gray-400 text-xs">
+                <TableCell className="text-slate-500 text-xs font-medium">
                   {product.unitId?.name || 'Unknown'}
                 </TableCell>
               )}
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2 transition-opacity">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-400 hover:bg-blue-400/10" onClick={() => handleEdit(product)}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:bg-blue-400/10" onClick={() => handleEdit(product)}>
                     <Edit2 className="h-3.5 w-3.5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-400/10" onClick={() => handleDeleteClick(product)}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-400/10" onClick={() => deleteProduct.mutate(product)}>
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
@@ -245,21 +245,21 @@ export default function ProductsPage() {
         <div className="space-y-4">
           {isSuperAdmin && !editingProduct && (
             <div>
-              <label className="text-sm font-medium mb-1.5 block text-gray-300">Target Unit</label>
+              <label className="text-sm font-medium mb-1.5 block text-slate-600">Target Unit</label>
               <select
                 title="Select Unit"
                 value={formData.unitId}
                 onChange={(e) => setFormData({ ...formData, unitId: e.target.value })}
-                className="w-full flex h-12 rounded-xl bg-black border border-[#27272a] px-4 py-2 text-sm text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all outline-none"
+                className="w-full flex h-12 rounded-xl bg-white border border-slate-200 px-4 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all outline-none"
               >
                 <option value="">Select a unit...</option>
-                <option value="all" className="text-white font-bold">★ Every Unit (Global Distribution)</option>
+                <option value="all" className="text-primary font-bold">★ Every Unit (Global Distribution)</option>
                 {units?.map(u => <option key={u._id} value={u._id}>{u.name}</option>)}
               </select>
             </div>
           )}
           <div>
-            <label className="text-sm font-medium mb-1.5 block text-gray-300">Product Name</label>
+            <label className="text-sm font-medium mb-1.5 block text-slate-600">Product Name</label>
             <Input
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -268,7 +268,7 @@ export default function ProductsPage() {
           </div>
           <div className="grid grid-cols-1 gap-4">
             <div>
-              <label className="text-sm font-medium mb-1.5 block text-gray-300">Price (₦)</label>
+              <label className="text-sm font-medium mb-1.5 block text-slate-600">Price (₦)</label>
               <Input
                 type="number"
                 step="0.01"
@@ -279,7 +279,7 @@ export default function ProductsPage() {
             </div>
           </div>
           <div>
-            <label className="text-sm font-medium mb-1.5 block text-gray-300">SKU / Code</label>
+            <label className="text-sm font-medium mb-1.5 block text-slate-600">SKU / Code</label>
             <Input
               value={formData.sku}
               onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
