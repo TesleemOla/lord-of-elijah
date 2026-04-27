@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchApi } from '../../services/api';
 import { Header } from '../../components/layout/Header';
@@ -17,7 +17,7 @@ import { ReceiptModal } from '../../components/POS/ReceiptModal';
 import { LoadingScreen } from '../../components/ui/LoadingScreen';
 import { clientsService, Client } from '../../services/clients';
 
-export default function POSPage() {
+function POSContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
@@ -434,5 +434,13 @@ export default function POSPage() {
         transaction={lastTransaction}
       />
     </div>
+  );
+}
+
+export default function POSPage() {
+  return (
+    <Suspense fallback={<LoadingScreen message="Loading Register..." />}>
+      <POSContent />
+    </Suspense>
   );
 }

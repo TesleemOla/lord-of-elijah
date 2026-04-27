@@ -197,7 +197,7 @@ export default function ProductsPage() {
                 </TableCell>
               )}
               <TableCell className="text-right">
-                <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex justify-end gap-2 transition-opacity">
                   <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-400 hover:bg-blue-400/10" onClick={() => handleEdit(product)}>
                     <Edit2 className="h-3.5 w-3.5" />
                   </Button>

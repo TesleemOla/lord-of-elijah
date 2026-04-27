@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchApi } from '../../../services/api';
 import { authService } from '../../../services/auth';
@@ -14,7 +14,7 @@ import { PaymentModal } from '../../../components/Transactions/PaymentModal';
 
 import { LoadingScreen } from '../../../components/ui/LoadingScreen';
 
-export default function TransactionsPage() {
+function TransactionsContent() {
   const searchParams = useSearchParams();
   const initialStatus = searchParams.get('paymentStatus') || '';
 
@@ -220,5 +220,13 @@ export default function TransactionsPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function TransactionsPage() {
+  return (
+    <Suspense fallback={<LoadingScreen message="Loading Transactions..." />}>
+      <TransactionsContent />
+    </Suspense>
   );
 }
