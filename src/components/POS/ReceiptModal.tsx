@@ -3,8 +3,9 @@
 import React, { useRef } from 'react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
-import { Download, CheckCircle2, Trash2, RotateCcw, AlertCircle, Wallet } from 'lucide-react';
+import { Download, CheckCircle2, Trash2, RotateCcw, AlertCircle, Wallet, UserPlus, Search, X, Loader2 as LoaderIcon } from 'lucide-react';
 import { PaymentModal } from '../Transactions/PaymentModal';
+import { clientsService, Client } from '../../services/clients';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import { toast } from 'sonner';
@@ -21,6 +22,10 @@ interface ReceiptModalProps {
 export function ReceiptModal({ isOpen, onClose, transaction }: ReceiptModalProps) {
   const receiptRef = useRef<HTMLDivElement>(null);
   const [showPayment, setShowPayment] = React.useState(false);
+  const [showLinkClient, setShowLinkClient] = React.useState(false);
+  const [selectedClientId, setSelectedClientId] = React.useState('');
+  const [clientSearch, setClientSearch] = React.useState('');
+  const [clients, setClients] = React.useState<Client[]>([]);
   const queryClient = useQueryClient();
   const user = authService.getCurrentUser();
   const isManager = user?.role === 'UNIT_MANAGER';
@@ -53,6 +58,32 @@ export function ReceiptModal({ isOpen, onClose, transaction }: ReceiptModalProps
     },
     onError: (err: any) => toast.error(err.message || 'Failed to process refund')
   });
+  
+  const linkClientMutation = useMutation({
+    mutationFn: (clientId: string) => fetchApi(`/transactions/${transaction._id}/link-client`, {
+      method: 'POST',
+      body: JSON.stringify({ clientId })
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics'] });
+      toast.success('Receipt Linked to Client Successfully');
+      setShowLinkClient(false);
+      onClose();
+    },
+    onError: (err: any) => toast.error(err.message || 'Failed to link client')
+  });
+
+  React.useEffect(() => {
+    if (showLinkClient) {
+      clientsService.getAll().then(setClients).catch(console.error);
+    }
+  }, [showLinkClient]);
+
+  const filteredClients = clients.filter(c => 
+    c.name.toLowerCase().includes(clientSearch.toLowerCase()) || 
+    c.clientId.toLowerCase().includes(clientSearch.toLowerCase())
+  );
 
   const handleDownload = async () => {
     if (!receiptRef.current) return;
@@ -143,6 +174,16 @@ export function ReceiptModal({ isOpen, onClose, transaction }: ReceiptModalProps
                   <Trash2 className="h-4 w-4" /> Void Sale
                 </Button>
               </div>
+              
+              {!transaction.clientId && (
+                <Button
+                  variant="outline"
+                  className="h-10 text-indigo-600 border-indigo-600/30 hover:bg-indigo-600/10 gap-2 text-[10px] font-black uppercase tracking-widest"
+                  onClick={() => setShowLinkClient(true)}
+                >
+                  <UserPlus className="h-4 w-4" /> Link to Client
+                </Button>
+              )}
             </div>
           )}
 
@@ -179,6 +220,60 @@ export function ReceiptModal({ isOpen, onClose, transaction }: ReceiptModalProps
               'Transaction has been nullified'}
         </p>
       </div>
+
+      {showLinkClient && (
+        <div className="mb-6 p-4 bg-indigo-50/50 border border-indigo-100 rounded-xl animate-in slide-in-from-top-4">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-sm font-bold text-indigo-900 uppercase tracking-wider">Connect to Client</h4>
+            <button onClick={() => setShowLinkClient(false)} className="text-indigo-400 hover:text-indigo-600">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-400" />
+              <input 
+                placeholder="Search clients..."
+                value={clientSearch}
+                onChange={e => setClientSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-white border border-indigo-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              />
+            </div>
+            
+            <div className="max-h-40 overflow-y-auto space-y-1 custom-scrollbar pr-1">
+              {filteredClients.map(client => (
+                <div 
+                  key={client._id}
+                  onClick={() => setSelectedClientId(client._id)}
+                  className={`p-2.5 rounded-lg border cursor-pointer transition-all flex justify-between items-center ${
+                    selectedClientId === client._id 
+                      ? 'bg-indigo-600 border-indigo-600 text-white' 
+                      : 'bg-white border-slate-100 hover:border-indigo-200'
+                  }`}
+                >
+                  <div>
+                    <p className={`font-bold text-xs ${selectedClientId === client._id ? 'text-white' : 'text-slate-900'}`}>{client.name}</p>
+                    <p className={`text-[10px] uppercase font-black ${selectedClientId === client._id ? 'text-indigo-100' : 'text-slate-400'}`}>{client.clientId}</p>
+                  </div>
+                  {client.phone && <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${selectedClientId === client._id ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>{client.phone}</span>}
+                </div>
+              ))}
+              {filteredClients.length === 0 && (
+                <p className="text-center py-4 text-xs text-slate-400 italic">No clients found</p>
+              )}
+            </div>
+            
+            <Button 
+              className="w-full h-10 font-black text-[10px] uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700"
+              disabled={!selectedClientId || linkClientMutation.isPending}
+              onClick={() => linkClientMutation.mutate(selectedClientId)}
+            >
+              {linkClientMutation.isPending ? 'Linking...' : 'Confirm Linking'}
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="border border-white/5 rounded-xl overflow-hidden">
         {/* The Actual Receipt Content (Styled for PDF) */}
