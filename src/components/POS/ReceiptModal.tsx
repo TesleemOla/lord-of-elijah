@@ -139,7 +139,8 @@ export function ReceiptModal({ isOpen, onClose, transaction }: ReceiptModalProps
   if (!transaction) return null;
 
   return (
-    <Modal
+    <>
+      <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={transaction.type === 'SALE' ? 'Success' : 'Transaction Record'}
@@ -220,60 +221,6 @@ export function ReceiptModal({ isOpen, onClose, transaction }: ReceiptModalProps
               'Transaction has been nullified'}
         </p>
       </div>
-
-      {showLinkClient && (
-        <div className="mb-6 p-4 bg-indigo-50/50 border border-indigo-100 rounded-xl animate-in slide-in-from-top-4">
-          <div className="flex items-center justify-between mb-4">
-            <h4 className="text-sm font-bold text-indigo-900 uppercase tracking-wider">Connect to Client</h4>
-            <button onClick={() => setShowLinkClient(false)} className="text-indigo-400 hover:text-indigo-600">
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-400" />
-              <input 
-                placeholder="Search clients..."
-                value={clientSearch}
-                onChange={e => setClientSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-white border border-indigo-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-              />
-            </div>
-            
-            <div className="max-h-40 overflow-y-auto space-y-1 custom-scrollbar pr-1">
-              {filteredClients.map(client => (
-                <div 
-                  key={client._id}
-                  onClick={() => setSelectedClientId(client._id)}
-                  className={`p-2.5 rounded-lg border cursor-pointer transition-all flex justify-between items-center ${
-                    selectedClientId === client._id 
-                      ? 'bg-indigo-600 border-indigo-600 text-white' 
-                      : 'bg-white border-slate-100 hover:border-indigo-200'
-                  }`}
-                >
-                  <div>
-                    <p className={`font-bold text-xs ${selectedClientId === client._id ? 'text-white' : 'text-slate-900'}`}>{client.name}</p>
-                    <p className={`text-[10px] uppercase font-black ${selectedClientId === client._id ? 'text-indigo-100' : 'text-slate-400'}`}>{client.clientId}</p>
-                  </div>
-                  {client.phone && <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${selectedClientId === client._id ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>{client.phone}</span>}
-                </div>
-              ))}
-              {filteredClients.length === 0 && (
-                <p className="text-center py-4 text-xs text-slate-400 italic">No clients found</p>
-              )}
-            </div>
-            
-            <Button 
-              className="w-full h-10 font-black text-[10px] uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700"
-              disabled={!selectedClientId || linkClientMutation.isPending}
-              onClick={() => linkClientMutation.mutate(selectedClientId)}
-            >
-              {linkClientMutation.isPending ? 'Linking...' : 'Confirm Linking'}
-            </Button>
-          </div>
-        </div>
-      )}
 
       <div className="border border-white/5 rounded-xl overflow-hidden">
         {/* The Actual Receipt Content (Styled for PDF) */}
@@ -410,5 +357,73 @@ export function ReceiptModal({ isOpen, onClose, transaction }: ReceiptModalProps
         transaction={transaction}
       />
     </Modal>
+
+      {showLinkClient && (
+        <div className="fixed z-[60] top-1/2 left-1/2 -translate-y-1/2 w-[340px] bg-white rounded-2xl shadow-[0_20px_60px_-15px_rgba(67,56,202,0.3)] border border-indigo-100 p-5 animate-in slide-in-from-left-8 fade-in duration-300 max-md:-translate-x-1/2 md:ml-[270px]">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h4 className="text-sm font-bold text-indigo-900 uppercase tracking-wider">Connect to Client</h4>
+              <p className="text-[10px] text-slate-500 font-medium mt-0.5">Link this receipt to an existing client account</p>
+            </div>
+            <button onClick={() => setShowLinkClient(false)} className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full p-1.5 transition-colors">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          
+          <div className="space-y-5">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-400" />
+              <input 
+                placeholder="Search clients by name or ID..."
+                value={clientSearch}
+                onChange={e => setClientSearch(e.target.value)}
+                className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium"
+                autoFocus
+              />
+            </div>
+            
+            <div className="max-h-[280px] overflow-y-auto space-y-1.5 custom-scrollbar pr-1 -mx-1 px-1">
+              {filteredClients.map(client => (
+                <div 
+                  key={client._id}
+                  onClick={() => setSelectedClientId(client._id)}
+                  className={`p-3 rounded-xl border cursor-pointer transition-all flex justify-between items-center ${
+                    selectedClientId === client._id 
+                      ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-200' 
+                      : 'bg-white border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/50'
+                  }`}
+                >
+                  <div>
+                    <p className={`font-bold text-xs ${selectedClientId === client._id ? 'text-white' : 'text-slate-900'}`}>{client.name}</p>
+                    <p className={`text-[10px] uppercase font-black tracking-widest mt-0.5 ${selectedClientId === client._id ? 'text-indigo-200' : 'text-indigo-600'}`}>{client.clientId}</p>
+                  </div>
+                  {client.phone && <span className={`text-[9px] font-bold px-2 py-1 rounded-md ${selectedClientId === client._id ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'}`}>{client.phone}</span>}
+                </div>
+              ))}
+              {filteredClients.length === 0 && (
+                <div className="text-center py-8">
+                  <UserPlus className="h-8 w-8 text-slate-200 mx-auto mb-2" />
+                  <p className="text-xs text-slate-400 font-medium">No clients found matching your search</p>
+                </div>
+              )}
+            </div>
+            
+            <div className="pt-2 border-t border-slate-100">
+              <Button 
+                className="w-full h-12 font-black text-[11px] uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20"
+                disabled={!selectedClientId || linkClientMutation.isPending}
+                onClick={() => linkClientMutation.mutate(selectedClientId)}
+              >
+                {linkClientMutation.isPending ? (
+                  <><LoaderIcon className="h-4 w-4 mr-2 animate-spin" /> Linking...</>
+                ) : (
+                  'Confirm Linking'
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

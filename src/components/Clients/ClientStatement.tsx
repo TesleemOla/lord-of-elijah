@@ -10,6 +10,7 @@ import { formatCurrency, formatDate } from '../../utils/format'
 import { Modal } from '../ui/Modal'
 import { Input } from '../ui/Input'
 import { toast } from 'sonner'
+import { downloadStatement } from '../../utils/receiptGenerator'
 
 interface ClientStatementProps {
   clientId: string
@@ -57,6 +58,12 @@ export function ClientStatement({ clientId }: ClientStatementProps) {
     }
   }
 
+  const handleExport = () => {
+    if (data) {
+      downloadStatement(data)
+    }
+  }
+
   if (loading) return <div className="text-center py-20 text-gray-900">Loading statement...</div>
   if (!data) return <div className="text-center py-20 text-red-400">Client statement not found.</div>
 
@@ -95,11 +102,12 @@ export function ClientStatement({ clientId }: ClientStatementProps) {
               New Sale
             </Button>
           </Link>
-          <Button variant="ghost" className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600">
-            <Printer className="h-4 w-4 mr-2" />
-            Print
-          </Button>
-          <Button variant="ghost" className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600">
+
+          <Button
+            variant="ghost"
+            className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600"
+            onClick={handleExport}
+          >
             <Download className="h-4 w-4 mr-2" />
             Export PDF
           </Button>
@@ -157,8 +165,8 @@ export function ClientStatement({ clientId }: ClientStatementProps) {
                 <TableCell className="text-slate-500 max-w-xs truncate">{row.items || 'Manual Payment / Refund'}</TableCell>
                 <TableCell>
                   <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${row.type === 'SALE' ? 'bg-blue-100 text-blue-700 border-blue-200' :
-                      row.type === 'VOID' ? 'bg-red-100 text-red-700 border-red-200' :
-                        'bg-amber-100 text-amber-700 border-amber-200'
+                    row.type === 'VOID' ? 'bg-red-100 text-red-700 border-red-200' :
+                      'bg-amber-100 text-amber-700 border-amber-200'
                     }`}>
                     {row.type}
                   </span>
