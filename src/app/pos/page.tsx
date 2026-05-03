@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react';
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { fetchApi } from '../../services/api';
 import { Header } from '../../components/layout/Header';
 import { authService } from '../../services/auth';
@@ -14,6 +14,7 @@ import { clsx } from 'clsx';
 
 import { toast } from 'sonner';
 import { ReceiptModal } from '../../components/POS/ReceiptModal';
+import { Modal } from '../../components/ui/Modal';
 import { LoadingScreen } from '../../components/ui/LoadingScreen';
 import { clientsService, Client } from '../../services/clients';
 
@@ -33,6 +34,7 @@ function POSContent() {
   const [lastTransaction, setLastTransaction] = useState<any>(null);
   const [amountPaid, setAmountPaid] = useState<number | string>('');
   const [isAmountPaidManual, setIsAmountPaidManual] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'TRANSFER' | 'POS'>('CASH');
 
   const {
     data,
@@ -87,6 +89,7 @@ function POSContent() {
         })),
         customerName: customerName || (selectedClientId ? clients.find(c => c._id === selectedClientId)?.name : 'Guest'),
         amountPaid: amountPaid === '' ? total : Number(amountPaid),
+        paymentMethod,
         clientId: selectedClientId || undefined
       }),
     }),
@@ -94,6 +97,7 @@ function POSContent() {
       setCart([]);
       setCustomerName('');
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['daily-breakdown'] });
       setLastTransaction(data);
       setShowReceipt(true);
     },
@@ -407,6 +411,27 @@ function POSContent() {
                   Number(amountPaid) < total ? "border-amber-400 text-amber-600" : "border-slate-200 text-primary focus:border-primary"
                 )}
               />
+            </div>
+
+            {/* Payment Method */}
+            <div className="space-y-2">
+              <p className="text-[10px] font-bold uppercase text-slate-500 tracking-widest">Payment Method</p>
+              <div className="flex gap-2">
+                {(['CASH', 'TRANSFER', 'POS'] as const).map(method => (
+                  <button
+                    key={method}
+                    onClick={() => setPaymentMethod(method)}
+                    className={clsx(
+                      "flex-1 p-2 rounded-xl text-xs font-bold border transition-all",
+                      paymentMethod === method 
+                        ? "bg-primary text-white border-primary shadow-md shadow-primary/20" 
+                        : "bg-white text-slate-600 border-slate-200 hover:border-primary/30"
+                    )}
+                  >
+                    {method}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 

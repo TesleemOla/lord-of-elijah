@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { Button } from './Button';
 
@@ -13,6 +14,12 @@ interface ModalProps {
 }
 
 export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -24,10 +31,10 @@ export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) 
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div 
         className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
         onClick={onClose}
@@ -51,6 +58,7 @@ export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) 
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

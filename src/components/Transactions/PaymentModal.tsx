@@ -8,6 +8,7 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { toast } from 'sonner';
 import { Wallet, Info } from 'lucide-react';
+import { clsx } from 'clsx';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -19,12 +20,13 @@ export function PaymentModal({ isOpen, onClose, transaction }: PaymentModalProps
   const queryClient = useQueryClient();
   const balance = transaction.total - transaction.amountPaid;
   const [amount, setAmount] = useState<number>(balance);
+  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'TRANSFER' | 'POS'>('CASH');
 
   const mutation = useMutation({
     mutationFn: (payAmount: number) =>
       fetchApi(`/transactions/${transaction._id}/pay`, {
         method: 'POST',
-        body: JSON.stringify({ amount: payAmount }),
+        body: JSON.stringify({ amount: payAmount, paymentMethod }),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
@@ -75,6 +77,27 @@ export function PaymentModal({ isOpen, onClose, transaction }: PaymentModalProps
               className="h-12 text-lg font-bold"
               placeholder="Enter amount received"
             />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest ml-1">Payment Method</label>
+            <div className="flex gap-2">
+              {(['CASH', 'TRANSFER', 'POS'] as const).map(method => (
+                <button
+                  key={method}
+                  type="button"
+                  onClick={() => setPaymentMethod(method)}
+                  className={clsx(
+                    "flex-1 p-2 rounded-xl text-xs font-bold border transition-all",
+                    paymentMethod === method 
+                      ? "bg-primary text-white border-primary shadow-md shadow-primary/20" 
+                      : "bg-white text-slate-600 border-slate-200 hover:border-primary/30"
+                  )}
+                >
+                  {method}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="bg-white/[0.02] rounded-lg p-3 flex gap-3 items-center border border-white/5">
