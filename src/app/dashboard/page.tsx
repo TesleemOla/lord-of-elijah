@@ -13,7 +13,7 @@ import {
 import { LoadingScreen } from '../../components/ui/LoadingScreen';
 
 export default function DashboardPage() {
-  const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month');
+  const [period, setPeriod] = useState<'day' | 'week' | 'month' | 'year'>('month');
   const [activeMetric, setActiveMetric] = useState<'revenue' | 'count'>('revenue');
   const [focusedUnitId, setFocusedUnitId] = useState<string | null>(null);
 
@@ -22,9 +22,9 @@ export default function DashboardPage() {
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
   const { data: summary, isLoading: summaryLoading } = useQuery({
-    queryKey: ['summary', isSuperAdmin ? 'global' : 'local'],
+    queryKey: ['summary', isSuperAdmin ? 'global' : 'local', period],
     queryFn: () =>
-      fetchApi<any>(isSuperAdmin ? '/transactions/summary/global' : '/transactions/summary/local'),
+      fetchApi<any>(`${isSuperAdmin ? '/transactions/summary/global' : '/transactions/summary/local'}?period=${period}`),
   });
 
   const { data: analytics, isLoading: analyticsLoading } = useQuery({
@@ -100,7 +100,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
-          {(['week', 'month', 'year'] as const).map((p) => (
+          {(['day', 'week', 'month', 'year'] as const).map((p) => (
             <button
               key={p}
               onClick={() => setPeriod(p)}
