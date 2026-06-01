@@ -288,6 +288,8 @@ export function ReceiptModal({ isOpen, onClose, transaction }: ReceiptModalProps
                 <tr className="border-b-2 border-gray-900 text-[10px] font-bold uppercase text-gray-900 tracking-wider">
                   <th className="py-1.5 px-1">Description</th>
                   <th className="py-1.5 px-1 text-center">Qty</th>
+                  <th className="py-1.5 px-1 text-center">Stock</th>
+                  <th className="py-1.5 px-1 text-center">Added</th>
                   <th className="py-1.5 px-1 text-right">Price</th>
                   <th className="py-1.5 px-1 text-right">Amount</th>
                 </tr>
@@ -299,6 +301,8 @@ export function ReceiptModal({ isOpen, onClose, transaction }: ReceiptModalProps
                       <p className="font-medium text-[10px] text-gray-900 leading-tight">{item.productName}</p>
                     </td>
                     <td className="py-1 px-1 text-center text-gray-600 font-normal">{item.qty}</td>
+                    <td className="py-1 px-1 text-center text-gray-600 font-normal">{(item.currentStockQuantity ?? 0).toLocaleString()}</td>
+                    <td className="py-1 px-1 text-center text-gray-600 font-normal">{(item.newStockAdded ?? 0).toLocaleString()}</td>
                     <td className="py-1 px-1 text-right text-gray-600 font-normal">₦{item.priceAtTime.toLocaleString()}</td>
                     <td className="py-1 px-1 text-right font-bold text-gray-900 bg-gray-50/50">₦{(item.qty * item.priceAtTime).toLocaleString()}</td>
                   </tr>

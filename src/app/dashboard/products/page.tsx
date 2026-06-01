@@ -30,7 +30,9 @@ export default function ProductsPage() {
     name: '',
     price: '',
     sku: '',
-    unitId: ''
+    unitId: '',
+    currentStockQuantity: '',
+    newStockAdded: ''
   });
 
   const {
@@ -74,6 +76,8 @@ export default function ProductsPage() {
       body: JSON.stringify({
         ...data,
         price: parseFloat(data.price),
+        currentStockQuantity: Number(data.currentStockQuantity || 0),
+        newStockAdded: Number(data.newStockAdded || data.currentStockQuantity || 0),
       }),
     }),
     onSuccess: () => {
@@ -91,6 +95,8 @@ export default function ProductsPage() {
       body: JSON.stringify({
         ...data,
         price: parseFloat(data.price),
+        currentStockQuantity: data.currentStockQuantity === '' ? undefined : Number(data.currentStockQuantity),
+        newStockAdded: Number(data.newStockAdded || 0),
       }),
     }),
     onSuccess: () => {
@@ -114,7 +120,7 @@ export default function ProductsPage() {
   });
 
   const resetForm = () => {
-    setFormData({ name: '', price: '', sku: '', unitId: '' });
+    setFormData({ name: '', price: '', sku: '', unitId: '', currentStockQuantity: '', newStockAdded: '' });
     setEditingProduct(null);
   };
 
@@ -137,7 +143,9 @@ export default function ProductsPage() {
       name: product.name,
       price: product.price.toString(),
       sku: product.sku,
-      unitId: product.unitId?._id || product.unitId
+      unitId: product.unitId?._id || product.unitId,
+      currentStockQuantity: (product.currentStockQuantity ?? 0).toString(),
+      newStockAdded: ''
     });
     setIsModalOpen(true);
   };
@@ -174,6 +182,8 @@ export default function ProductsPage() {
             <TableHead>Product</TableHead>
             <TableHead>Price</TableHead>
             <TableHead>SKU</TableHead>
+            <TableHead>Current Stock</TableHead>
+
             {isSuperAdmin && <TableHead>Unit</TableHead>}
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -191,6 +201,8 @@ export default function ProductsPage() {
               </TableCell>
               <TableCell className="text-primary font-bold">₦{product.price.toLocaleString()}</TableCell>
               <TableCell className="text-slate-500 text-xs">{product.sku}</TableCell>
+              <TableCell className="font-bold text-slate-900">{(product.currentStockQuantity ?? 0).toLocaleString()}</TableCell>
+
               {isSuperAdmin && (
                 <TableCell className="text-slate-500 text-xs font-medium">
                   {product.unitId?.name || 'Unknown'}
@@ -285,6 +297,28 @@ export default function ProductsPage() {
               onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
               placeholder="e.g. CF-001"
             />
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label className="text-sm font-medium mb-1.5 block text-slate-600">Current Stock Quantity</label>
+              <Input
+                type="number"
+                min="0"
+                value={formData.currentStockQuantity}
+                onChange={(e) => setFormData({ ...formData, currentStockQuantity: e.target.value })}
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1.5 block text-slate-600">New Stock Added</label>
+              <Input
+                type="number"
+                min="0"
+                value={formData.newStockAdded}
+                onChange={(e) => setFormData({ ...formData, newStockAdded: e.target.value })}
+                placeholder={editingProduct ? 'Restock amount' : '0'}
+              />
+            </div>
           </div>
         </div>
       </Modal>

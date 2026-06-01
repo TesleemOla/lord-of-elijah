@@ -131,11 +131,20 @@ function POSContent() {
   if (productsLoading && !searchTerm) return <LoadingScreen message="Opening Digital Register..." />;
 
   const addToCart = (product: any) => {
+    const currentStock = Number(product.currentStockQuantity ?? 0);
     setCart(prev => {
       const existing = prev.find(i => i.product._id === product._id);
 
       if (existing) {
+        if (existing.qty >= currentStock) {
+          toast.error('Insufficient stock for this product');
+          return prev;
+        }
         return prev.map(i => i.product._id === product._id ? { ...i, qty: i.qty + 1 } : i);
+      }
+      if (currentStock <= 0) {
+        toast.error('This product is out of stock');
+        return prev;
       }
       return [...prev, { product, qty: 1 }];
     });
@@ -154,6 +163,12 @@ function POSContent() {
   const updateQty = (productId: string, qty: string) => {
     const newQty = qty === '' ? 0 : parseInt(qty);
     setCart(prev => {
+      const item = prev.find(i => i.product._id === productId);
+      const currentStock = Number(item?.product.currentStockQuantity ?? 0);
+      if (newQty > currentStock) {
+        toast.error('Quantity exceeds current stock');
+        return prev;
+      }
       if (newQty <= 0 && qty !== '') {
         return prev.filter(i => i.product._id !== productId);
       }
@@ -214,6 +229,9 @@ function POSContent() {
                     </div>
                     <div className="mt-3">
                       <p className="text-primary font-bold">₦{(product.price || 0).toLocaleString()}</p>
+                      <p className={`text-[10px] font-black uppercase mt-1 ${Number(product.currentStockQuantity ?? 0) > 0 ? 'text-slate-500' : 'text-red-500'}`}>
+                        Stock: {(product.currentStockQuantity ?? 0).toLocaleString()}
+                      </p>
                     </div>
                   </div>
                 );
@@ -254,6 +272,9 @@ function POSContent() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1 pr-2">
                     <p className="font-semibold text-[13px] leading-tight mb-1 text-slate-900">{item.product.name}</p>
+                    <p className="text-[10px] font-bold uppercase text-slate-400 mb-1">
+                      Available: {(item.product.currentStockQuantity ?? 0).toLocaleString()}
+                    </p>
                     <div className="flex items-center gap-1.5">
                       <input
                         type="number"
